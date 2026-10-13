@@ -185,30 +185,32 @@ const navSections: { title: string; items: NavItem[] }[] = [
 
 export function Sidebar({ userRole }: { userRole: Role }) {
   const pathname = usePathname();
-  const { isOpen, setIsOpen, isDesktopCollapsed } = useSidebar();
+  const { isOpen, closeSidebar } = useSidebar();
+
+  // Automatically close sidebar whenever user navigates
+  React.useEffect(() => {
+    closeSidebar();
+  }, [pathname]);
 
   return (
     <>
-      {/* Mobile Drawer Backdrop */}
+      {/* Backdrop overlay: shown whenever menu is open */}
       {isOpen && (
         <div
-          onClick={() => setIsOpen(false)}
-          className="lg:hidden fixed inset-0 z-40 bg-slate-950/75 backdrop-blur-xs transition-opacity"
+          onClick={closeSidebar}
+          className="fixed inset-0 z-40 bg-slate-950/75 backdrop-blur-xs transition-opacity duration-200 animate-in fade-in cursor-pointer"
+          aria-label="Close menu backdrop"
         />
       )}
 
-      {/* Sidebar Container */}
+      {/* Off-canvas Sliding Sidebar: closed by default, slides out when opened */}
       <aside
         className={cn(
-          "fixed top-0 bottom-0 left-0 z-40 w-64 bg-slate-900 border-r border-slate-800 flex flex-col transition-transform duration-300 ease-in-out",
-          isOpen
-            ? "translate-x-0"
-            : isDesktopCollapsed
-            ? "-translate-x-full"
-            : "-translate-x-full lg:translate-x-0"
+          "fixed top-0 bottom-0 left-0 z-50 w-72 sm:w-80 bg-slate-900 border-r border-slate-800 flex flex-col shadow-2xl transition-transform duration-300 ease-in-out",
+          isOpen ? "translate-x-0" : "-translate-x-full"
         )}
       >
-        {/* Brand Header */}
+        {/* Brand Header with Close (X) button */}
         <div className="h-16 flex items-center justify-between px-6 border-b border-slate-800">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-amber-600 to-orange-500 flex items-center justify-center text-white font-extrabold shadow-sm">
@@ -224,11 +226,12 @@ export function Sidebar({ userRole }: { userRole: Role }) {
             </div>
           </div>
 
-          {/* Close button on mobile drawer */}
+          {/* Close Button to dismiss menu */}
           <button
-            onClick={() => setIsOpen(false)}
-            className="lg:hidden p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+            onClick={closeSidebar}
+            className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 active:scale-95 transition-all cursor-pointer"
             aria-label="Close navigation menu"
+            title="Close Menu"
           >
             <X className="w-5 h-5" />
           </button>
@@ -257,7 +260,7 @@ export function Sidebar({ userRole }: { userRole: Role }) {
                     <Link
                       key={item.href}
                       href={item.href}
-                      onClick={() => setIsOpen(false)}
+                      onClick={closeSidebar}
                       className={cn(
                         "flex items-center justify-between px-3 py-2 rounded-xl text-sm font-medium transition-all group",
                         isActive

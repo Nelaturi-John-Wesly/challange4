@@ -1,42 +1,26 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useContext, useState } from "react";
 
 interface SidebarContextType {
   isOpen: boolean;
   setIsOpen: (open: boolean) => void;
   toggleSidebar: () => void;
-  isDesktopCollapsed: boolean;
-  toggleDesktopCollapse: () => void;
+  closeSidebar: () => void;
 }
 
 const SidebarContext = createContext<SidebarContextType | undefined>(undefined);
 
 export function SidebarProvider({ children }: { children: React.ReactNode }) {
+  // Menu bar is closed by default, opened on demand via the 3-lines menu icon
   const [isOpen, setIsOpen] = useState(false);
-  const [isDesktopCollapsed, setIsDesktopCollapsed] = useState(false);
-
-  // Close mobile drawer when resizing up to desktop
-  useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth >= 1024) {
-        setIsOpen(false);
-      }
-    };
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
 
   const toggleSidebar = () => {
-    if (typeof window !== "undefined" && window.innerWidth < 1024) {
-      setIsOpen((prev) => !prev);
-    } else {
-      setIsDesktopCollapsed((prev) => !prev);
-    }
+    setIsOpen((prev) => !prev);
   };
 
-  const toggleDesktopCollapse = () => {
-    setIsDesktopCollapsed((prev) => !prev);
+  const closeSidebar = () => {
+    setIsOpen(false);
   };
 
   return (
@@ -45,8 +29,7 @@ export function SidebarProvider({ children }: { children: React.ReactNode }) {
         isOpen,
         setIsOpen,
         toggleSidebar,
-        isDesktopCollapsed,
-        toggleDesktopCollapse,
+        closeSidebar,
       }}
     >
       {children}
