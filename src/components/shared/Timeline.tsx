@@ -4,22 +4,26 @@ import { Check, Circle } from "lucide-react";
 import React from "react";
 
 export interface TimelineStep {
-  title: string;
+  title?: string;
+  step?: string;
   description?: string;
   date?: string;
   status: "completed" | "current" | "upcoming";
 }
 
 interface TimelineProps {
-  steps: TimelineStep[];
+  steps?: TimelineStep[];
+  items?: TimelineStep[];
   className?: string;
 }
 
-export function Timeline({ steps, className = "" }: TimelineProps) {
+export function Timeline({ steps, items, className = "" }: TimelineProps) {
+  const list = steps || items || [];
   return (
     <div className={`space-y-4 ${className}`}>
-      {steps.map((step, idx) => {
-        const isLast = idx === steps.length - 1;
+      {list.map((step, idx) => {
+        const isLast = idx === list.length - 1;
+        const title = step.title || step.step || "";
 
         let iconBg = "bg-slate-800 text-slate-500 border-slate-700";
         let lineBg = "bg-slate-800";
@@ -58,7 +62,7 @@ export function Timeline({ steps, className = "" }: TimelineProps) {
             {/* Step Details */}
             <div className="flex-1 pb-4 text-left">
               <div className="flex items-center justify-between gap-2">
-                <h4 className={`text-xs ${titleColor}`}>{step.title}</h4>
+                <h4 className={`text-xs ${titleColor}`}>{title}</h4>
                 {step.date && (
                   <span className="text-[10px] text-slate-400 font-mono">{step.date}</span>
                 )}
