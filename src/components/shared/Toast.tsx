@@ -10,6 +10,7 @@ export interface ToastItem {
   title: string;
   description?: string;
   variant?: ToastVariant;
+  type?: ToastVariant;
   duration?: number;
 }
 
@@ -31,11 +32,13 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
     ({
       title,
       description,
-      variant = "default",
+      variant,
+      type,
       duration = 4500,
     }: Omit<ToastItem, "id">) => {
+      const activeVariant: ToastVariant = variant || type || "default";
       const id = `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
-      const newToast: ToastItem = { id, title, description, variant, duration };
+      const newToast: ToastItem = { id, title, description, variant: activeVariant, duration };
 
       setToasts((prev) => [newToast, ...prev]);
 

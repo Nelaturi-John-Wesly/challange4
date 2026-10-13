@@ -137,6 +137,14 @@ export const INITIAL_CLUBS: Club[] = [
 // ============================================================================
 // EVENTS & TICKETING
 // ============================================================================
+export interface EventFeedback {
+  id: string;
+  studentName: string;
+  rating: number; // 1-5
+  comment: string;
+  createdAt: string;
+}
+
 export interface CampusEvent {
   id: string;
   title: string;
@@ -149,7 +157,13 @@ export interface CampusEvent {
   seatsLeft: number;
   banner: string;
   description: string;
-  category: "Fest" | "Workshop" | "Seminar" | "Sports";
+  category: "Cultural" | "Tech" | "Sports" | "Workshop" | "Seminar" | "Fest";
+  speaker?: string;
+  speakerRole?: string;
+  registrationDeadline?: string;
+  itinerary?: { time: string; activity: string }[];
+  feedbackEnabled?: boolean;
+  feedbacks?: EventFeedback[];
   isRegistered?: boolean;
 }
 
@@ -159,11 +173,16 @@ export interface UserTicket {
   eventTitle: string;
   userName: string;
   userRoll: string;
+  userEmail?: string;
   date: string;
+  time?: string;
   venue: string;
   qrCode: string;
   status: "Registered" | "Checked In";
   bookedAt: string;
+  checkedInAt?: string;
+  paymentMethod?: string;
+  amountPaid?: number;
 }
 
 export const INITIAL_EVENTS: CampusEvent[] = [
@@ -172,57 +191,138 @@ export const INITIAL_EVENTS: CampusEvent[] = [
     title: "InnovateX: 36-Hour National Hackathon",
     clubName: "Google Developer Student Club",
     date: "2026-04-18",
-    time: "09:00 AM",
+    time: "09:00 AM - 09:00 PM",
     venue: "Main Auditorium & LHC Labs",
     price: 0,
     seatsTotal: 200,
     seatsLeft: 18,
     banner: "🏆",
-    description: "India's premier campus hackathon with ₹1.5L prize pool, cloud mentors, and hardware tracks.",
-    category: "Fest",
+    description: "India's premier campus hackathon with ₹1.5L prize pool, cloud mentors, and hardware tracks. Build real AI solutions and present to Silicon Valley judges.",
+    category: "Tech",
+    speaker: "Sundararajan Krishnan",
+    speakerRole: "Staff AI Engineer @ Google Brain",
+    registrationDeadline: "2026-04-16",
+    itinerary: [
+      { time: "08:30 AM", activity: "Check-in, Swag Bags & Team Verification" },
+      { time: "09:30 AM", activity: "Keynote Address by Google Brain Team" },
+      { time: "11:00 AM", activity: "Hacking Begins (Hardware & Software Tracks)" },
+      { time: "08:00 PM", activity: "Midnight Mentorship Round & Dinner" },
+    ],
+    feedbackEnabled: false,
+    feedbacks: [],
     isRegistered: true,
   },
   {
     id: "ev-2",
-    title: "Workshop: Generative AI on Edge Devices",
+    title: "Workshop: Generative AI & Robotics on Edge",
     clubName: "Robotics & AI Guild",
     date: "2026-04-22",
-    time: "02:00 PM",
+    time: "02:00 PM - 05:30 PM",
     venue: "Computer Center Lab 4",
     price: 199,
     seatsTotal: 60,
     seatsLeft: 7,
     banner: "⚡",
-    description: "Deploying quantized Gemini & vision models on Raspberry Pi 5 and Jetson Nano hardware.",
+    description: "Hands-on masterclass: Deploy quantized Gemini models and real-time YOLOv10 object detection on Raspberry Pi 5 & Jetson Orin boards.",
     category: "Workshop",
+    speaker: "Dr. Arvind Narayanan",
+    speakerRole: "Director of Autonomous Systems Lab",
+    registrationDeadline: "2026-04-20",
+    itinerary: [
+      { time: "02:00 PM", activity: "Edge TensorRT Architecture & Quantization" },
+      { time: "03:15 PM", activity: "Hands-on: Flashing Models to Jetson Nano" },
+      { time: "04:45 PM", activity: "Live Drone Camera Obstacle Avoidance Demo" },
+    ],
+    feedbackEnabled: false,
+    feedbacks: [],
   },
   {
     id: "ev-3",
-    title: "Echoes 2026: Annual Cultural Night",
+    title: "Echoes 2026: Grand Annual Cultural Festival",
     clubName: "Dhwani Music & Arts Society",
     date: "2026-05-02",
-    time: "06:00 PM",
+    time: "05:00 PM - 10:30 PM",
     venue: "Open Air Amphitheatre",
     price: 0,
     seatsTotal: 500,
     seatsLeft: 84,
     banner: "🎭",
-    description: "Star guest performances, DJ night, battle of the bands, and street play finals.",
-    category: "Fest",
+    description: "The grandest night on campus featuring fusion band battles, classical showcase, celebrity DJ headliner, and inter-college dance finals.",
+    category: "Cultural",
+    speaker: "Maestro Shankar Ehsaan",
+    speakerRole: "Celebrity Music Producer & Guest Judge",
+    registrationDeadline: "2026-04-30",
+    itinerary: [
+      { time: "05:00 PM", activity: "Battle of the Bands Semi-Finals" },
+      { time: "07:30 PM", activity: "Inter-College Dance Showcase" },
+      { time: "09:00 PM", activity: "Headliner Concert & Light Show" },
+    ],
+    feedbackEnabled: true,
+    feedbacks: [
+      {
+        id: "fb-1",
+        studentName: "Aditya V.",
+        rating: 5,
+        comment: "Incredible lineup! Sound system at the open amphitheatre was top tier.",
+        createdAt: "Yesterday",
+      },
+    ],
   },
   {
     id: "ev-4",
-    title: "Venture Pitch 2026: Seed Funding Day",
+    title: "Inter-College Invitational Cricket Cup",
+    clubName: "Sports & Athletics Council",
+    date: "2026-05-05",
+    time: "08:00 AM - 04:00 PM",
+    venue: "College Sports Pavilion & Ground 1",
+    price: 50,
+    seatsTotal: 150,
+    seatsLeft: 0, // SOLD OUT test case!
+    banner: "🏏",
+    description: "T20 Knockout tournament featuring 8 university teams. Witness the fiercest rivalries and high-stakes cricket under professional turf conditions.",
+    category: "Sports",
+    speaker: "Coach R. Balasubramanian",
+    speakerRole: "Former Ranji Trophy Captain",
+    registrationDeadline: "2026-05-01",
+    itinerary: [
+      { time: "08:00 AM", activity: "Coin Toss & Match 1: Host vs IIT" },
+      { time: "12:30 PM", activity: "Lunch Break & Player Briefing" },
+      { time: "01:30 PM", activity: "Grand Finals & Trophy Presentation" },
+    ],
+    feedbackEnabled: false,
+    feedbacks: [],
+  },
+  {
+    id: "ev-5",
+    title: "Venture Pitch 2026: Angel & VC Seed Day",
     clubName: "E-Cell",
     date: "2026-05-09",
-    time: "10:30 AM",
+    time: "10:30 AM - 04:00 PM",
     venue: "Executive Seminar Hall",
     price: 99,
     seatsTotal: 100,
     seatsLeft: 42,
     banner: "💡",
-    description: "Pitch live to angel investors and seed fund partners from Sequoia Surge and Blume Ventures.",
+    description: "Pitch your tech startup live to accredited venture partners from Sequoia Surge, Blume Ventures, and alumni angel syndicates. Grants up to ₹10 Lakhs.",
     category: "Seminar",
+    speaker: "Neha Mathur",
+    speakerRole: "Partner @ Nexus Venture Partners",
+    registrationDeadline: "2026-05-07",
+    itinerary: [
+      { time: "10:30 AM", activity: "Founders Welcome & VC Panel Discussion" },
+      { time: "11:45 AM", activity: "Top 10 Startup Pitches (5 min pitch + 3 min Q&A)" },
+      { time: "02:30 PM", activity: "Term Sheet & Grant Winner Announcements" },
+    ],
+    feedbackEnabled: true,
+    feedbacks: [
+      {
+        id: "fb-2",
+        studentName: "Karthik Varma",
+        rating: 5,
+        comment: "Direct VC feedback on our pitch deck was extraordinarily helpful!",
+        createdAt: "2 days ago",
+      },
+    ],
   },
 ];
 
@@ -428,11 +528,46 @@ class GlobalAppStore {
       eventTitle: "InnovateX: 36-Hour National Hackathon",
       userName: "Ananya Reddy",
       userRoll: "22ECE1047",
-      date: "Apr 18, 2026",
-      venue: "Main Auditorium",
-      qrCode: "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=TKT-HACK-8491",
+      userEmail: "ananya@college.edu",
+      date: "2026-04-18",
+      time: "09:00 AM - 09:00 PM",
+      venue: "Main Auditorium & LHC Labs",
+      qrCode: "https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=TKT-HACK-8491",
       status: "Registered",
       bookedAt: "Yesterday",
+    },
+    {
+      ticketId: "TKT-CUL-5021",
+      eventId: "ev-3",
+      eventTitle: "Echoes 2026: Grand Annual Cultural Festival",
+      userName: "Ananya Reddy",
+      userRoll: "22ECE1047",
+      userEmail: "ananya@college.edu",
+      date: "2026-05-02",
+      time: "05:00 PM - 10:30 PM",
+      venue: "Open Air Amphitheatre",
+      qrCode: "https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=TKT-CUL-5021",
+      status: "Checked In",
+      bookedAt: "3 days ago",
+      checkedInAt: "05:15 PM",
+      paymentMethod: "Free Entry Pass",
+      amountPaid: 0,
+    },
+    {
+      ticketId: "TKT-ROBO-9214",
+      eventId: "ev-2",
+      eventTitle: "Workshop: Generative AI & Robotics on Edge",
+      userName: "Karthik Varma",
+      userRoll: "22CSE0231",
+      userEmail: "karthik@college.edu",
+      date: "2026-04-22",
+      time: "02:00 PM - 05:30 PM",
+      venue: "Computer Center Lab 4",
+      qrCode: "https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=TKT-ROBO-9214",
+      status: "Registered",
+      bookedAt: "2 days ago",
+      paymentMethod: "UPI QR (student@upi)",
+      amountPaid: 199,
     },
   ];
   menu: MenuItem[] = INITIAL_MENU;
@@ -498,9 +633,40 @@ class GlobalAppStore {
   }
 
   // --- Event & Ticketing Actions ---
-  bookEvent(eventId: string, userName: string, userRoll: string) {
+  createEvent(eventData: Omit<CampusEvent, "id" | "seatsLeft" | "isRegistered" | "feedbacks">) {
+    const newEvent: CampusEvent = {
+      id: `ev-${Date.now()}`,
+      ...eventData,
+      seatsLeft: eventData.seatsTotal,
+      feedbacks: [],
+      feedbackEnabled: false,
+      isRegistered: false,
+    };
+
+    this.events = [newEvent, ...this.events];
+
+    this.dispatchNotification({
+      title: `🎉 New Event: ${newEvent.title}`,
+      message: `Hosted by ${newEvent.clubName} at ${newEvent.venue}. Registration is now open!`,
+      type: "EVENT",
+      link: "/events",
+    });
+
+    this.notify();
+    return newEvent;
+  }
+
+  bookEvent(
+    eventId: string,
+    userName: string,
+    userRoll: string,
+    userEmail?: string,
+    paymentMethod?: string,
+    amountPaid: number = 0
+  ): { success: boolean; ticket?: UserTicket; message?: string } {
     const ev = this.events.find((e) => e.id === eventId);
-    if (!ev || ev.seatsLeft <= 0) return false;
+    if (!ev) return { success: false, message: "Event not found." };
+    if (ev.seatsLeft <= 0) return { success: false, message: "Sorry, this event is already sold out." };
 
     this.events = this.events.map((e) =>
       e.id === eventId
@@ -508,44 +674,152 @@ class GlobalAppStore {
         : e
     );
 
-    const ticketCode = `TKT-${Date.now().toString().slice(-6)}`;
+    const ticketCode = `TKT-${Math.floor(100000 + Math.random() * 900000)}`;
     const newTicket: UserTicket = {
       ticketId: ticketCode,
       eventId: ev.id,
       eventTitle: ev.title,
       userName: userName || "Ananya Reddy",
       userRoll: userRoll || "22ECE1047",
+      userEmail: userEmail || "ananya@college.edu",
       date: ev.date,
+      time: ev.time,
       venue: ev.venue,
-      qrCode: `https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${ticketCode}`,
+      qrCode: `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${ticketCode}`,
       status: "Registered",
       bookedAt: "Just now",
+      paymentMethod: paymentMethod || (ev.price > 0 ? "Mock UPI" : "Free Registration"),
+      amountPaid: amountPaid,
     };
 
     this.userTickets = [newTicket, ...this.userTickets];
 
     this.dispatchNotification({
       title: "🎟️ Event Ticket Booked!",
-      message: `Confirmed registration for "${ev.title}". Pass saved to My Tickets.`,
+      message: `Pass #${ticketCode} confirmed for "${ev.title}". Saved to My Tickets.`,
+      type: "EVENT",
+      link: "/events",
+    });
+
+    this.notify();
+    return { success: true, ticket: newTicket };
+  }
+
+  cancelTicket(ticketId: string): { success: boolean; message: string } {
+    const ticket = this.userTickets.find((t) => t.ticketId === ticketId);
+    if (!ticket) return { success: false, message: "Ticket not found." };
+
+    // Release seat back
+    this.events = this.events.map((e) =>
+      e.id === ticket.eventId
+        ? { ...e, seatsLeft: Math.min(e.seatsTotal, e.seatsLeft + 1) }
+        : e
+    );
+
+    // Remove ticket
+    this.userTickets = this.userTickets.filter((t) => t.ticketId !== ticketId);
+
+    // If no more tickets for this event, reset isRegistered
+    const remainingForEvent = this.userTickets.some((t) => t.eventId === ticket.eventId);
+    if (!remainingForEvent) {
+      this.events = this.events.map((e) =>
+        e.id === ticket.eventId ? { ...e, isRegistered: false } : e
+      );
+    }
+
+    this.dispatchNotification({
+      title: "Pass Cancelled & Seat Released",
+      message: `Your booking for "${ticket.eventTitle}" was cancelled. 1 seat restored.`,
+      type: "EVENT",
+      link: "/events",
+    });
+
+    this.notify();
+    return { success: true, message: "Registration cancelled successfully. Seat released." };
+  }
+
+  checkInTicket(ticketId: string): { success: boolean; message: string; ticket?: UserTicket } {
+    const ticket = this.userTickets.find((t) => t.ticketId.toUpperCase() === ticketId.trim().toUpperCase());
+    if (!ticket) {
+      return { success: false, message: `No active ticket found with ID "${ticketId}".` };
+    }
+
+    if (ticket.status === "Checked In") {
+      return {
+        success: false,
+        message: `⚠️ Duplicate Scan! Ticket #${ticket.ticketId} (${ticket.userName}) was already checked in at ${ticket.checkedInAt || "earlier"}.`,
+        ticket,
+      };
+    }
+
+    const checkTime = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    this.userTickets = this.userTickets.map((t) =>
+      t.ticketId === ticket.ticketId
+        ? { ...t, status: "Checked In", checkedInAt: checkTime }
+        : t
+    );
+
+    this.dispatchNotification({
+      title: "Pass Scanned: Checked In",
+      message: `Ticket #${ticket.ticketId} validated at entrance for ${ticket.userName} (${checkTime}).`,
+      type: "EVENT",
+      link: "/events",
+    });
+
+    this.notify();
+    return {
+      success: true,
+      message: `✅ Check-in Approved! Welcome ${ticket.userName} (${ticket.userRoll}) at ${checkTime}.`,
+      ticket: { ...ticket, status: "Checked In", checkedInAt: checkTime },
+    };
+  }
+
+  toggleFeedbackCollection(eventId: string, enabled: boolean) {
+    this.events = this.events.map((e) =>
+      e.id === eventId ? { ...e, feedbackEnabled: enabled } : e
+    );
+
+    const ev = this.events.find((e) => e.id === eventId);
+    if (enabled && ev) {
+      this.dispatchNotification({
+        title: "📝 Event Feedback Open",
+        message: `Organizer is now collecting student feedback for "${ev.title}".`,
+        type: "EVENT",
+        link: "/events",
+      });
+    }
+
+    this.notify();
+  }
+
+  submitEventFeedback(eventId: string, studentName: string, rating: number, comment: string) {
+    const feedback: EventFeedback = {
+      id: `fb-${Date.now()}`,
+      studentName: studentName || "Anonymous Student",
+      rating,
+      comment,
+      createdAt: "Just now",
+    };
+
+    this.events = this.events.map((e) => {
+      if (e.id === eventId) {
+        return {
+          ...e,
+          feedbacks: [feedback, ...(e.feedbacks || [])],
+        };
+      }
+      return e;
+    });
+
+    this.dispatchNotification({
+      title: "Thank You for Event Feedback!",
+      message: `Your rating and review were submitted to the organizing committee.`,
       type: "EVENT",
       link: "/events",
     });
 
     this.notify();
     return true;
-  }
-
-  checkInTicket(ticketId: string) {
-    this.userTickets = this.userTickets.map((t) =>
-      t.ticketId === ticketId ? { ...t, status: "Checked In" } : t
-    );
-    this.dispatchNotification({
-      title: "Pass Scanned: Checked In",
-      message: `Ticket ${ticketId} has been successfully validated at venue entrance.`,
-      type: "EVENT",
-      link: "/events",
-    });
-    this.notify();
   }
 
   // --- Cafeteria Actions ---

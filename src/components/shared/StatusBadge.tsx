@@ -15,16 +15,17 @@ export type StatusType =
 
 interface StatusBadgeProps {
   status: StatusType | string;
+  label?: string;
   className?: string;
   showIcon?: boolean;
 }
 
-export function StatusBadge({ status, className = "", showIcon = true }: StatusBadgeProps) {
+export function StatusBadge({ status, label: customLabel, className = "", showIcon = true }: StatusBadgeProps) {
   const normalized = status.toLowerCase();
 
   let styles = "border-slate-700 bg-slate-800/60 text-slate-300";
   let icon = <Clock className="w-3 h-3" />;
-  let label = status;
+  let label = customLabel || status;
 
   if (normalized.includes("pending")) {
     styles = "border-amber-500/40 bg-amber-500/10 text-amber-400";
