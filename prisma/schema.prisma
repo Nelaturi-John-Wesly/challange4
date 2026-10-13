@@ -1,0 +1,726 @@
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// -------------------------------------------------------------
+// ENUMS
+// -------------------------------------------------------------
+
+enum Role {
+  STUDENT
+  FACULTY
+  ADMIN
+  RECRUITER
+  ALUMNI
+}
+
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+  LATE
+  EXCUSED
+}
+
+enum ExamType {
+  INTERNAL_1
+  INTERNAL_2
+  MID_TERM
+  PRACTICAL
+  SEMESTER_FINAL
+}
+
+enum SubmissionStatus {
+  SUBMITTED
+  GRADED
+  LATE
+  RESUBMISSION_REQUESTED
+}
+
+enum FeeType {
+  TUITION
+  EXAM
+  HOSTEL
+  LIBRARY
+  LAB
+  OTHER
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  OVERDUE
+  CANCELLED
+}
+
+enum ClubRole {
+  MEMBER
+  OFFICER
+  PRESIDENT
+  VICE_PRESIDENT
+  TREASURER
+}
+
+enum MembershipStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum TicketStatus {
+  REGISTERED
+  CHECKED_IN
+  CANCELLED
+}
+
+enum MatchStatus {
+  UPCOMING
+  LIVE
+  COMPLETED
+  POSTPONED
+}
+
+enum ArticleStatus {
+  DRAFT
+  SUBMITTED
+  APPROVED
+  PUBLISHED
+  REJECTED
+}
+
+enum ApplicationStatus {
+  APPLIED
+  SHORTLISTED
+  INTERVIEW_SCHEDULED
+  OFFER_EXTENDED
+  REJECTED
+  WITHDRAWN
+}
+
+enum MentorshipStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+  COMPLETED
+}
+
+enum OrderStatus {
+  PLACED
+  PREPARING
+  READY_FOR_PICKUP
+  COMPLETED
+  CANCELLED
+}
+
+enum GrievanceCategory {
+  ACADEMIC
+  HOSTEL
+  INFRASTRUCTURE
+  CANTEEN
+  DISCRIMINATION
+  TRANSPORT
+  OTHER
+}
+
+enum GrievancePriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum GrievanceStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  REJECTED
+}
+
+// -------------------------------------------------------------
+// 1. CORE INSTITUTION & USER MANAGEMENT
+// -------------------------------------------------------------
+
+model Department {
+  id          String   @id @default(cuid())
+  code        String   @unique // e.g., "CSE", "ECE", "MECH"
+  name        String
+  description String?
+  createdAt   DateTime @default(now())
+
+  users       User[]
+  courses     Course[]
+  sportsTeams SportsTeam[]
+}
+
+model User {
+  id           String      @id @default(cuid())
+  email        String      @unique
+  password     String // bcrypt hash
+  name         String
+  role         Role        @default(STUDENT)
+  avatar       String?
+  phone        String?
+  departmentId String?
+  department   Department? @relation(fields: [departmentId], references: [id])
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  // Role Profile Extensions
+  studentProfile   StudentProfile?
+  facultyProfile   FacultyProfile?
+  alumniProfile    AlumniProfile?
+  recruiterProfile RecruiterProfile?
+
+  // Activity Associations
+  attendanceRecords  AttendanceRecord[]
+  submissions        AssignmentSubmission[]
+  feeInvoices        FeeInvoice[]
+  clubMemberships    ClubMember[]
+  eventTickets       EventTicket[]
+  articlesAuthored   Article[]
+  placementApps      PlacementApplication[]
+  mentorshipSent     MentorshipRequest[]    @relation("StudentMentee")
+  mentorshipReceived MentorshipRequest[]    @relation("AlumniMentor")
+  innovationProjects InnovationProject[]
+  cafeteriaOrders    CafeteriaOrder[]
+  grievancesFiled    GrievanceTicket[]      @relation("StudentGrievance")
+  grievancesAssigned GrievanceTicket[]      @relation("StaffGrievance")
+  notifications      Notification[]
+  enrollments        SubjectEnrollment[]
+}
+
+model StudentProfile {
+  id               String  @id @default(cuid())
+  userId           String  @unique
+  user             User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  rollNumber       String  @unique
+  batch            String // e.g., "2022-2026"
+  year             Int // 1, 2, 3, 4
+  semester         Int // 1 to 8
+  section          String // "A", "B"
+  cgpa             Float   @default(0.0)
+  bloodGroup       String?
+  emergencyContact String?
+  qrCodeUrl        String? // Generated DataURL
+}
+
+model FacultyProfile {
+  id            String  @id @default(cuid())
+  userId        String  @unique
+  user          User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  employeeId    String  @unique
+  designation   String // e.g. "Associate Professor"
+  qualification String // e.g. "Ph.D. Computer Science"
+  cabinNumber   String?
+
+  teachingSlots  TimetableSlot[]
+  sessionsTaken  AttendanceSession[]
+  materials      CourseMaterial[]
+  assignments    Assignment[]
+  researchPapers ResearchPaper[]
+}
+
+model AlumniProfile {
+  id                String  @id @default(cuid())
+  userId            String  @unique
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  graduationYear    Int
+  degree            String
+  company           String
+  designation       String
+  industry          String
+  linkedinUrl       String?
+  bio               String?
+  openForMentorship Boolean @default(true)
+}
+
+model RecruiterProfile {
+  id          String  @id @default(cuid())
+  userId      String  @unique
+  user        User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  companyName String
+  website     String?
+  industry    String?
+  isVerified  Boolean @default(true)
+
+  placementDrives PlacementDrive[]
+}
+
+// -------------------------------------------------------------
+// 2. ACADEMICS: COURSES, TIMETABLES & ATTENDANCE (PHASE 1)
+// -------------------------------------------------------------
+
+model Course {
+  id           String     @id @default(cuid())
+  code         String     @unique // e.g. "CS301"
+  name         String
+  credits      Int        @default(3)
+  semester     Int
+  departmentId String
+  department   Department @relation(fields: [departmentId], references: [id])
+
+  enrollments        SubjectEnrollment[]
+  timetableSlots     TimetableSlot[]
+  attendanceSessions AttendanceSession[]
+  examSchedules      ExamSchedule[]
+  materials          CourseMaterial[]
+  assignments        Assignment[]
+}
+
+model SubjectEnrollment {
+  id        String @id @default(cuid())
+  studentId String
+  student   User   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  courseId  String
+  course    Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  semester  Int
+
+  @@unique([studentId, courseId])
+}
+
+model TimetableSlot {
+  id         String         @id @default(cuid())
+  courseId   String
+  course     Course         @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  facultyId  String
+  faculty    FacultyProfile @relation(fields: [facultyId], references: [id])
+  dayOfWeek  Int // 1 = Monday, 5 = Friday
+  startTime  String // "09:00"
+  endTime    String // "10:00"
+  roomNumber String // "LHC-201"
+  section    String // "A"
+  semester   Int
+}
+
+model AttendanceSession {
+  id        String         @id @default(cuid())
+  courseId  String
+  course    Course         @relation(fields: [courseId], references: [id])
+  facultyId String
+  faculty   FacultyProfile @relation(fields: [facultyId], references: [id])
+  date      DateTime
+  section   String
+  semester  Int
+  topic     String?
+  createdAt DateTime       @default(now())
+
+  records AttendanceRecord[]
+}
+
+model AttendanceRecord {
+  id        String            @id @default(cuid())
+  sessionId String
+  session   AttendanceSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  studentId String
+  student   User              @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  status    AttendanceStatus  @default(PRESENT)
+  remarks   String?
+
+  @@unique([sessionId, studentId])
+}
+
+model ExamSchedule {
+  id         String   @id @default(cuid())
+  courseId   String
+  course     Course   @relation(fields: [courseId], references: [id])
+  examType   ExamType
+  examDate   DateTime
+  startTime  String // "10:00"
+  endTime    String // "13:00"
+  roomNumber String
+  maxMarks   Int      @default(100)
+}
+
+// -------------------------------------------------------------
+// 3. LEARNING MANAGEMENT SYSTEM (PHASE 1)
+// -------------------------------------------------------------
+
+model CourseMaterial {
+  id          String         @id @default(cuid())
+  courseId    String
+  course      Course         @relation(fields: [courseId], references: [id])
+  facultyId   String
+  faculty     FacultyProfile @relation(fields: [facultyId], references: [id])
+  title       String
+  description String?
+  fileUrl     String
+  fileType    String // "pdf", "ppt", "docx"
+  uploadedAt  DateTime       @default(now())
+}
+
+model Assignment {
+  id            String         @id @default(cuid())
+  courseId      String
+  course        Course         @relation(fields: [courseId], references: [id])
+  facultyId     String
+  faculty       FacultyProfile @relation(fields: [facultyId], references: [id])
+  title         String
+  description   String
+  attachmentUrl String?
+  dueDate       DateTime
+  maxMarks      Int            @default(100)
+  createdAt     DateTime       @default(now())
+
+  submissions AssignmentSubmission[]
+}
+
+model AssignmentSubmission {
+  id           String           @id @default(cuid())
+  assignmentId String
+  assignment   Assignment       @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  studentId    String
+  student      User             @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  fileUrl      String
+  notes        String?
+  submittedAt  DateTime         @default(now())
+  status       SubmissionStatus @default(SUBMITTED)
+  marks        Float?
+  feedback     String?
+  gradedAt     DateTime?
+
+  @@unique([assignmentId, studentId])
+}
+
+// -------------------------------------------------------------
+// 4. FEES & FINANCIAL TRANSACTIONS (PHASE 1)
+// -------------------------------------------------------------
+
+model FeeInvoice {
+  id            String        @id @default(cuid())
+  studentId     String
+  student       User          @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  feeType       FeeType
+  title         String
+  amount        Float
+  dueDate       DateTime
+  status        PaymentStatus @default(PENDING)
+  receiptNumber String?       @unique
+  paidAt        DateTime?
+  paymentMethod String?
+  createdAt     DateTime      @default(now())
+
+  transactions PaymentTransaction[]
+}
+
+model PaymentTransaction {
+  id            String     @id @default(cuid())
+  invoiceId     String
+  invoice       FeeInvoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  amount        Float
+  gatewayRef    String     @unique
+  status        String // "SUCCESS", "FAILED"
+  paymentMethod String // "UPI", "CARD", "NETBANKING"
+  rawResponse   String? // JSON mock string
+  createdAt     DateTime   @default(now())
+}
+
+// -------------------------------------------------------------
+// 5. CAMPUS LIFE: CLUBS, EVENTS & TICKETING (PHASE 2)
+// -------------------------------------------------------------
+
+model Club {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  description String
+  category    String // "Technical", "Cultural", "Sports", "Literary"
+  logoUrl     String?
+  bannerUrl   String?
+  createdAt   DateTime @default(now())
+
+  members ClubMember[]
+  events  CampusEvent[]
+  gallery ClubGallery[]
+}
+
+model ClubMember {
+  id       String           @id @default(cuid())
+  clubId   String
+  club     Club             @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  userId   String
+  user     User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role     ClubRole         @default(MEMBER)
+  status   MembershipStatus @default(PENDING)
+  joinedAt DateTime         @default(now())
+
+  @@unique([clubId, userId])
+}
+
+model ClubGallery {
+  id        String   @id @default(cuid())
+  clubId    String
+  club      Club     @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  caption   String
+  imageUrl  String
+  createdAt DateTime @default(now())
+}
+
+model CampusEvent {
+  id                 String   @id @default(cuid())
+  title              String
+  slug               String   @unique
+  description        String
+  category           String // "Fest", "Workshop", "Seminar", "Sports"
+  clubId             String?
+  club               Club?    @relation(fields: [clubId], references: [id])
+  venue              String
+  startDate          DateTime
+  endDate            DateTime
+  capacity           Int      @default(200)
+  bannerUrl          String?
+  isRegistrationOpen Boolean  @default(true)
+  createdAt          DateTime @default(now())
+
+  tickets EventTicket[]
+}
+
+model EventTicket {
+  id            String       @id @default(cuid())
+  eventId       String
+  event         CampusEvent  @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  userId        String
+  user          User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ticketCode    String       @unique // e.g. "TKT-TECHFEST-9342"
+  qrCodeDataUrl String
+  status        TicketStatus @default(REGISTERED)
+  checkedInAt   DateTime?
+  checkedInBy   String?
+  createdAt     DateTime     @default(now())
+
+  @@unique([eventId, userId])
+}
+
+// -------------------------------------------------------------
+// 6. SPORTS & LEADERBOARDS (PHASE 2)
+// -------------------------------------------------------------
+
+model SportsTournament {
+  id           String      @id @default(cuid())
+  name         String
+  sportType    String // "Football", "Cricket", "Basketball", "Badminton"
+  academicYear String // "2024-2025"
+  status       MatchStatus @default(UPCOMING)
+
+  fixtures SportsFixture[]
+  teams    SportsTeam[]
+}
+
+model SportsTeam {
+  id           String           @id @default(cuid())
+  tournamentId String
+  tournament   SportsTournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  departmentId String
+  department   Department       @relation(fields: [departmentId], references: [id])
+  teamName     String
+  captainName  String
+
+  homeFixtures SportsFixture[] @relation("HomeTeam")
+  awayFixtures SportsFixture[] @relation("AwayTeam")
+}
+
+model SportsFixture {
+  id           String           @id @default(cuid())
+  tournamentId String
+  tournament   SportsTournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  homeTeamId   String
+  homeTeam     SportsTeam       @relation("HomeTeam", fields: [homeTeamId], references: [id])
+  awayTeamId   String
+  awayTeam     SportsTeam       @relation("AwayTeam", fields: [awayTeamId], references: [id])
+  scheduledAt  DateTime
+  venue        String
+  homeScore    Int?
+  awayScore    Int?
+  status       MatchStatus      @default(UPCOMING)
+  winnerTeamId String?
+}
+
+model DepartmentLeaderboard {
+  id             String @id @default(cuid())
+  departmentCode String @unique
+  points         Int    @default(0)
+  goldMedals     Int    @default(0)
+  silverMedals   Int    @default(0)
+  bronzeMedals   Int    @default(0)
+}
+
+// -------------------------------------------------------------
+// 7. STUDENT MEDIA CELL (PHASE 2)
+// -------------------------------------------------------------
+
+model Article {
+  id            String        @id @default(cuid())
+  authorId      String
+  author        User          @relation(fields: [authorId], references: [id])
+  title         String
+  slug          String        @unique
+  excerpt       String
+  content       String // Markdown or Rich Text
+  coverImageUrl String?
+  category      String // "Journalism", "Campus Life", "Creative Writing", "Tech"
+  podcastUrl    String?
+  status        ArticleStatus @default(DRAFT)
+  publishedAt   DateTime?
+  createdAt     DateTime      @default(now())
+}
+
+// -------------------------------------------------------------
+// 8. PLACEMENTS, ALUMNI & RESEARCH (PHASE 3)
+// -------------------------------------------------------------
+
+model PlacementDrive {
+  id               String           @id @default(cuid())
+  recruiterId      String
+  recruiter        RecruiterProfile @relation(fields: [recruiterId], references: [id])
+  title            String // "Software Development Engineer"
+  roleType         String // "Full-time", "Internship"
+  packageLPA       Float // 14.5 LPA
+  location         String
+  eligibilityCgpa  Float            @default(6.5)
+  eligibleBranches String // "CSE, IT, ECE"
+  description      String
+  deadline         DateTime
+  isOpen           Boolean          @default(true)
+  createdAt        DateTime         @default(now())
+
+  applications PlacementApplication[]
+}
+
+model PlacementApplication {
+  id        String            @id @default(cuid())
+  driveId   String
+  drive     PlacementDrive    @relation(fields: [driveId], references: [id], onDelete: Cascade)
+  studentId String
+  student   User              @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  resumeUrl String
+  status    ApplicationStatus @default(APPLIED)
+  appliedAt DateTime          @default(now())
+
+  @@unique([driveId, studentId])
+}
+
+model MentorshipRequest {
+  id           String           @id @default(cuid())
+  studentId    String
+  student      User             @relation("StudentMentee", fields: [studentId], references: [id], onDelete: Cascade)
+  alumniId     String
+  alumni       User             @relation("AlumniMentor", fields: [alumniId], references: [id], onDelete: Cascade)
+  topic        String
+  message      String
+  status       MentorshipStatus @default(PENDING)
+  replyMessage String?
+  createdAt    DateTime         @default(now())
+}
+
+model ResearchPaper {
+  id              String         @id @default(cuid())
+  facultyId       String
+  faculty         FacultyProfile @relation(fields: [facultyId], references: [id])
+  title           String
+  authors         String // e.g. "Dr. Sana Iqbal, Prof. Rajesh Nair"
+  journalOrConf   String
+  publicationYear Int
+  abstract        String
+  paperUrl        String?
+  doi             String?
+}
+
+model InnovationProject {
+  id         String   @id @default(cuid())
+  studentId  String
+  student    User     @relation(fields: [studentId], references: [id])
+  title      String
+  category   String // "IoT", "AI/ML", "CleanTech", "Fintech"
+  stage      String // "Concept", "Working Prototype", "Incubated Startup"
+  abstract   String
+  demoUrl    String?
+  mentorName String?
+  createdAt  DateTime @default(now())
+}
+
+// -------------------------------------------------------------
+// 9. CAMPUS LOGISTICS (PHASE 4)
+// -------------------------------------------------------------
+
+model CampusFacility {
+  id          String  @id @default(cuid())
+  name        String // e.g. "Computer Center 4", "Dean Office", "Restroom Block B"
+  type        String // "CLASSROOM", "LAB", "OFFICE", "RESTROOM", "WATER_STATION", "LIBRARY", "CAFETERIA"
+  building    String // "Aryabhatta Block"
+  floor       Int // 2
+  roomNumber  String?
+  description String?
+}
+
+model CafeteriaItem {
+  id          String  @id @default(cuid())
+  name        String
+  category    String // "Breakfast", "Meals", "Beverages", "Snacks"
+  price       Float
+  isAvailable Boolean @default(true)
+  imageUrl    String?
+  canteenName String  @default("Central Canteen")
+
+  orderItems CafeteriaOrderItem[]
+}
+
+model CafeteriaOrder {
+  id          String      @id @default(cuid())
+  userId      String
+  user        User        @relation(fields: [userId], references: [id])
+  orderNumber String      @unique // "ORD-8492"
+  totalAmount Float
+  pickupSlot  String // "12:30 PM - 12:45 PM"
+  status      OrderStatus @default(PLACED)
+  createdAt   DateTime    @default(now())
+
+  items CafeteriaOrderItem[]
+}
+
+model CafeteriaOrderItem {
+  id       String         @id @default(cuid())
+  orderId  String
+  order    CafeteriaOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  itemId   String
+  item     CafeteriaItem  @relation(fields: [itemId], references: [id])
+  quantity Int            @default(1)
+  price    Float
+}
+
+model GrievanceTicket {
+  id           String            @id @default(cuid())
+  ticketNo     String            @unique // "GRV-2024-001"
+  studentId    String
+  student      User              @relation("StudentGrievance", fields: [studentId], references: [id])
+  category     GrievanceCategory
+  title        String
+  description  String
+  location     String // "Hostel Block 3, Room 214"
+  photoUrl     String?
+  priority     GrievancePriority @default(MEDIUM)
+  status       GrievanceStatus   @default(OPEN)
+  assignedToId String?
+  assignedTo   User?             @relation("StaffGrievance", fields: [assignedToId], references: [id])
+  resolution   String?
+  createdAt    DateTime          @default(now())
+  resolvedAt   DateTime?
+}
+
+// -------------------------------------------------------------
+// 10. SYSTEM UTILITIES (PHASE 5)
+// -------------------------------------------------------------
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  message   String
+  link      String?
+  isRead    Boolean  @default(false)
+  type      String // "ATTENDANCE", "FEE", "ASSIGNMENT", "EVENT", "PLACEMENT"
+  createdAt DateTime @default(now())
+}
