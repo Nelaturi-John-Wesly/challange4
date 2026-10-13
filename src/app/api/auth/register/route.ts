@@ -7,6 +7,14 @@ import QRCode from "qrcode";
 export const dynamic = "force-dynamic";
 
 // GET: Returns department options for the registration dropdown
+const DEFAULT_DEPARTMENTS = [
+  { id: "dept-cse", code: "CSE", name: "Computer Science & Engineering" },
+  { id: "dept-ece", code: "ECE", name: "Electronics & Communication Engineering" },
+  { id: "dept-it", code: "IT", name: "Information Technology" },
+  { id: "dept-mech", code: "MECH", name: "Mechanical Engineering" },
+  { id: "dept-civil", code: "CIVIL", name: "Civil Engineering" },
+];
+
 export async function GET() {
   try {
     const departments = await prisma.department.findMany({
@@ -17,12 +25,12 @@ export async function GET() {
       },
       orderBy: { code: "asc" },
     });
+    if (!departments || departments.length === 0) {
+      return NextResponse.json({ departments: DEFAULT_DEPARTMENTS });
+    }
     return NextResponse.json({ departments });
-  } catch (err: any) {
-    return NextResponse.json(
-      { error: "Failed to fetch departments", details: err?.message },
-      { status: 500 }
-    );
+  } catch (_err: any) {
+    return NextResponse.json({ departments: DEFAULT_DEPARTMENTS });
   }
 }
 
