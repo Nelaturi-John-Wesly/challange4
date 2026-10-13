@@ -17,6 +17,8 @@ enum Role {
   ADMIN
   RECRUITER
   ALUMNI
+  CLUB_LEAD
+  CAFETERIA_STAFF
 }
 
 enum AttendanceStatus {

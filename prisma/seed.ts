@@ -88,17 +88,101 @@ async function main() {
   const adminPw = await bcrypt.hash("Admin@123", 10);
   const recruiterPw = await bcrypt.hash("Recruiter@123", 10);
   const alumniPw = await bcrypt.hash("Alumni@123", 10);
+  const clubLeadPw = await bcrypt.hash("Club@123", 10);
+  const canteenPw = await bcrypt.hash("Staff@123", 10);
 
-  // Admin
+  // 1. Admin: Dr. S. Prakash
   const adminUser = await prisma.user.create({
     data: {
       email: "admin@college.edu",
       password: adminPw,
-      name: "Dr. Anita Rao",
+      name: "Dr. S. Prakash",
       role: "ADMIN",
       phone: "+91 98110 11223",
       departmentId: deptCse.id,
-      avatar: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=80",
+      avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
+    },
+  });
+
+  // 2. Student 1: Ananya Reddy (22ECE1047)
+  const ananyaQr = await QRCode.toDataURL("VERIFY:STU:22ECE1047:ANANYA_REDDY:VALID_2026");
+  const studentAnanya = await prisma.user.create({
+    data: {
+      email: "ananya@college.edu",
+      password: studentPw,
+      name: "Ananya Reddy",
+      role: "STUDENT",
+      phone: "+91 98765 43210",
+      departmentId: deptEce.id,
+      avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80",
+      studentProfile: {
+        create: {
+          rollNumber: "22ECE1047",
+          batch: "2022-2026",
+          year: 3,
+          semester: 5,
+          section: "A",
+          cgpa: 8.92,
+          bloodGroup: "O+",
+          emergencyContact: "+91 98765 11223 (Parent)",
+          qrCodeUrl: ananyaQr,
+        },
+      },
+    },
+    include: { studentProfile: true },
+  });
+
+  // 3. Student 2: Karthik Varma (22CSE0231)
+  const karthikQr = await QRCode.toDataURL("VERIFY:STU:22CSE0231:KARTHIK_VARMA:VALID_2026");
+  const studentKarthik = await prisma.user.create({
+    data: {
+      email: "karthik@college.edu",
+      password: studentPw,
+      name: "Karthik Varma",
+      role: "STUDENT",
+      phone: "+91 98765 22334",
+      departmentId: deptCse.id,
+      avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80",
+      studentProfile: {
+        create: {
+          rollNumber: "22CSE0231",
+          batch: "2022-2026",
+          year: 3,
+          semester: 5,
+          section: "B",
+          cgpa: 8.45,
+          bloodGroup: "B+",
+          emergencyContact: "+91 98765 44556 (Parent)",
+          qrCodeUrl: karthikQr,
+        },
+      },
+    },
+    include: { studentProfile: true },
+  });
+
+  // 4. Club Lead: Priya Sharma
+  await prisma.user.create({
+    data: {
+      email: "club@college.edu",
+      password: clubLeadPw,
+      name: "Priya Sharma",
+      role: "CLUB_LEAD",
+      phone: "+91 98450 77889",
+      departmentId: deptCse.id,
+      avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
+    },
+  });
+
+  // 5. Cafeteria Staff: Chef Ramesh
+  await prisma.user.create({
+    data: {
+      email: "canteen@college.edu",
+      password: canteenPw,
+      name: "Chef Ramesh",
+      role: "CAFETERIA_STAFF",
+      phone: "+91 98450 88990",
+      departmentId: deptCse.id,
+      avatar: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=150&auto=format&fit=crop&q=80",
     },
   });
 
@@ -146,40 +230,14 @@ async function main() {
     include: { facultyProfile: true },
   });
 
-  // Primary Demo Student: Kiran Kumar (3rd Year, Sem 5, Section A)
-  const kiranQr = await QRCode.toDataURL("VERIFY:STU:2023CSE042:KIRAN_KUMAR:VALID_2026");
-  const studentPrimary = await prisma.user.create({
-    data: {
-      email: "student@college.edu",
-      password: studentPw,
-      name: "Kiran Kumar",
-      role: "STUDENT",
-      phone: "+91 98765 43210",
-      departmentId: deptCse.id,
-      avatar: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=150&auto=format&fit=crop&q=80",
-      studentProfile: {
-        create: {
-          rollNumber: "2023CSE042",
-          batch: "2022-2026",
-          year: 3,
-          semester: 5,
-          section: "A",
-          cgpa: 8.42,
-          bloodGroup: "O+",
-          emergencyContact: "+91 98765 11223 (Father)",
-          qrCodeUrl: kiranQr,
-        },
-      },
-    },
-    include: { studentProfile: true },
-  });
+  const studentPrimary = studentKarthik;
 
   // Peer Cohort Students for attendance marking grid & realistic rankings
   const peerNames = [
     { name: "Aarav Sharma", email: "aarav@college.edu", roll: "2023CSE001", cgpa: 9.15, blood: "B+" },
     { name: "Diya Patel", email: "diya@college.edu", roll: "2023CSE015", cgpa: 8.85, blood: "A+" },
     { name: "Rohan Verma", email: "rohan@college.edu", roll: "2023CSE028", cgpa: 7.20, blood: "AB+" },
-    { name: "Ananya Iyer", email: "ananya@college.edu", roll: "2023CSE035", cgpa: 9.40, blood: "O-" },
+    { name: "Divya Iyer", email: "divya@college.edu", roll: "2023CSE035", cgpa: 9.40, blood: "O-" },
   ];
 
   const peerUsers = [];
@@ -211,7 +269,7 @@ async function main() {
     peerUsers.push(u);
   }
 
-  const allCohortStudents = [studentPrimary, ...peerUsers];
+  const allCohortStudents = [studentAnanya, studentKarthik, ...peerUsers];
 
   // Recruiter: Google Campus Hiring
   await prisma.user.create({
@@ -233,12 +291,12 @@ async function main() {
     },
   });
 
-  // Alumni: Rahul Mehta
+  // Alumni: Vikramaditya Rao
   await prisma.user.create({
     data: {
       email: "alumni@college.edu",
       password: alumniPw,
-      name: "Rahul Mehta",
+      name: "Vikramaditya Rao",
       role: "ALUMNI",
       phone: "+91 99887 76655",
       departmentId: deptCse.id,
@@ -246,12 +304,12 @@ async function main() {
       alumniProfile: {
         create: {
           graduationYear: 2021,
-          degree: "B.Tech Computer Science",
-          company: "Microsoft",
-          designation: "Senior Software Engineer",
-          industry: "Cloud Architecture & AI",
-          linkedinUrl: "https://linkedin.com/in/rahul-mehta-demo",
-          bio: "Alumni batch of 2021. Happy to review resumes, conduct mock technical interviews, and guide on cloud systems.",
+          degree: "B.Tech Computer Science & Engineering",
+          company: "Google",
+          designation: "Senior Software Engineer (L5)",
+          industry: "Cloud & Distributed Systems",
+          linkedinUrl: "https://linkedin.com/in/vikramaditya-rao",
+          bio: "Alumni batch of 2021. Mentor for distributed systems, SDE interviews, and campus hackathons.",
           openForMentorship: true,
         },
       },

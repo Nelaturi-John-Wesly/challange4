@@ -2,6 +2,7 @@
 
 import { useSidebar } from "@/components/layout/SidebarContext";
 import { ThemeToggle } from "@/components/layout/ThemeToggle";
+import { NotificationBell } from "@/components/shared/NotificationBell";
 import { Badge } from "@/components/ui/badge";
 import { LogOut, Menu, User as UserIcon } from "lucide-react";
 import { signOut } from "next-auth/react";
@@ -27,7 +28,7 @@ export function Topbar({ user }: TopbarProps) {
           onClick={toggleSidebar}
           aria-label="Toggle navigation menu"
           title="Toggle Navigation Menu"
-          className="p-2 -ml-1 sm:-ml-2 rounded-xl text-slate-600 dark:text-slate-300 hover:text-amber-500 dark:hover:text-amber-400 hover:bg-slate-100 dark:hover:bg-slate-800/80 active:scale-95 transition-all focus:outline-hidden focus:ring-2 focus:ring-amber-500/30"
+          className="p-2 -ml-1 sm:-ml-2 rounded-xl text-slate-600 dark:text-slate-300 hover:text-amber-500 dark:hover:text-amber-400 hover:bg-slate-100 dark:hover:bg-slate-800/80 active:scale-95 transition-all focus:outline-hidden focus:ring-2 focus:ring-amber-500/30 cursor-pointer"
         >
           <Menu className="w-5 h-5" />
         </button>
@@ -44,7 +45,8 @@ export function Topbar({ user }: TopbarProps) {
       </div>
 
       {/* Right Controls */}
-      <div className="flex items-center gap-3 sm:gap-4">
+      <div className="flex items-center gap-2 sm:gap-3">
+        <NotificationBell />
         <ThemeToggle />
 
         {/* User Card & Signout */}

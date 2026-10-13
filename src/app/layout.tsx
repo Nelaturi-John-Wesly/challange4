@@ -1,5 +1,6 @@
 import { AuthProvider } from "@/components/providers/AuthProvider";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
+import { ToastProvider } from "@/components/shared/Toast";
 import type { Metadata } from "next";
 import "./globals.css";
 
@@ -18,9 +19,12 @@ export default function RootLayout({
     <html lang="en" className="dark h-full antialiased" suppressHydrationWarning>
       <body className="min-h-full flex flex-col bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100">
         <AuthProvider>
-          <ThemeProvider>{children}</ThemeProvider>
+          <ThemeProvider>
+            <ToastProvider>{children}</ToastProvider>
+          </ThemeProvider>
         </AuthProvider>
       </body>
     </html>
   );
 }
+

@@ -40,13 +40,13 @@ interface NavItem {
 
 const navSections: { title: string; items: NavItem[] }[] = [
   {
-    title: "Core Operations (Phase 1)",
+    title: "Core Operations",
     items: [
       {
         name: "Dashboard",
         href: "/dashboard",
         icon: LayoutDashboard,
-        roles: ["STUDENT", "FACULTY", "ADMIN", "RECRUITER", "ALUMNI"],
+        roles: ["STUDENT", "FACULTY", "ADMIN", "RECRUITER", "ALUMNI", "CLUB_LEAD", "CAFETERIA_STAFF"],
       },
       {
         name: "Smart Attendance",
@@ -107,25 +107,25 @@ const navSections: { title: string; items: NavItem[] }[] = [
         name: "Clubs & Societies",
         href: "/clubs",
         icon: Users,
-        roles: ["STUDENT", "FACULTY", "ADMIN", "ALUMNI"],
+        roles: ["STUDENT", "FACULTY", "ADMIN", "ALUMNI", "CLUB_LEAD"],
       },
       {
         name: "Events & Ticketing",
         href: "/events",
         icon: Bell,
-        roles: ["STUDENT", "FACULTY", "ADMIN", "ALUMNI", "RECRUITER"],
+        roles: ["STUDENT", "FACULTY", "ADMIN", "ALUMNI", "RECRUITER", "CLUB_LEAD"],
       },
       {
         name: "Sports Tournaments",
         href: "/sports",
         icon: Trophy,
-        roles: ["STUDENT", "FACULTY", "ADMIN"],
+        roles: ["STUDENT", "FACULTY", "ADMIN", "CLUB_LEAD"],
       },
       {
         name: "Student Media Cell",
         href: "/media",
         icon: Newspaper,
-        roles: ["STUDENT", "FACULTY", "ADMIN", "ALUMNI"],
+        roles: ["STUDENT", "FACULTY", "ADMIN", "ALUMNI", "CLUB_LEAD"],
       },
     ],
   },
@@ -136,7 +136,7 @@ const navSections: { title: string; items: NavItem[] }[] = [
         name: "Placements & Internships",
         href: "/placements",
         icon: Award,
-        roles: ["STUDENT", "RECRUITER", "ADMIN"],
+        roles: ["STUDENT", "RECRUITER", "ADMIN", "ALUMNI"],
       },
       {
         name: "Alumni Directory",
@@ -148,7 +148,7 @@ const navSections: { title: string; items: NavItem[] }[] = [
         name: "Research Showcase",
         href: "/research",
         icon: BookOpen,
-        roles: ["STUDENT", "FACULTY", "ADMIN"],
+        roles: ["STUDENT", "FACULTY", "ADMIN", "ALUMNI"],
       },
     ],
   },
@@ -159,19 +159,19 @@ const navSections: { title: string; items: NavItem[] }[] = [
         name: "Campus Map",
         href: "/campus-map",
         icon: MapPin,
-        roles: ["STUDENT", "FACULTY", "ADMIN", "RECRUITER", "ALUMNI"],
+        roles: ["STUDENT", "FACULTY", "ADMIN", "RECRUITER", "ALUMNI", "CLUB_LEAD", "CAFETERIA_STAFF"],
       },
       {
         name: "Cafeteria Pre-Order",
         href: "/cafeteria",
         icon: Coffee,
-        roles: ["STUDENT", "FACULTY", "ADMIN"],
+        roles: ["STUDENT", "FACULTY", "ADMIN", "CAFETERIA_STAFF"],
       },
       {
         name: "Help Desk & Grievance",
         href: "/grievances",
         icon: HelpCircle,
-        roles: ["STUDENT", "FACULTY", "ADMIN"],
+        roles: ["STUDENT", "FACULTY", "ADMIN", "CAFETERIA_STAFF", "CLUB_LEAD"],
       },
       {
         name: "Admin Control Center",
@@ -296,10 +296,21 @@ export function Sidebar({ userRole }: { userRole: Role }) {
         {/* Footer Role Indicator */}
         <div className="p-4 border-t border-slate-800/80 bg-slate-950/40">
           <div className="text-xs text-slate-400 flex items-center justify-between">
-            <span>Logged in as:</span>
-            <Badge variant="outline" className="text-[10px] text-amber-400 border-amber-500/40">
-              {userRole}
-            </Badge>
+            <span className="font-medium text-slate-400">Logged in as:</span>
+            <span
+              className={cn(
+                "text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-md border",
+                userRole === "STUDENT" && "border-sky-500/40 text-sky-400 bg-sky-500/10",
+                userRole === "ADMIN" && "border-amber-500/40 text-amber-400 bg-amber-500/10",
+                userRole === "CLUB_LEAD" && "border-purple-500/40 text-purple-400 bg-purple-500/10",
+                userRole === "CAFETERIA_STAFF" && "border-emerald-500/40 text-emerald-400 bg-emerald-500/10",
+                userRole === "ALUMNI" && "border-rose-500/40 text-rose-400 bg-rose-500/10",
+                userRole === "FACULTY" && "border-teal-500/40 text-teal-400 bg-teal-500/10",
+                userRole === "RECRUITER" && "border-indigo-500/40 text-indigo-400 bg-indigo-500/10"
+              )}
+            >
+              {userRole.replace("_", " ")}
+            </span>
           </div>
         </div>
       </aside>
