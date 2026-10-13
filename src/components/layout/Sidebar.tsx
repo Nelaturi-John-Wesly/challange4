@@ -1,5 +1,6 @@
 "use client";
 
+import { useSidebar } from "@/components/layout/SidebarContext";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { Role } from "@prisma/client";
@@ -27,7 +28,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import React, { useState } from "react";
+import React from "react";
 
 interface NavItem {
   name: string;
@@ -184,47 +185,53 @@ const navSections: { title: string; items: NavItem[] }[] = [
 
 export function Sidebar({ userRole }: { userRole: Role }) {
   const pathname = usePathname();
-  const [isOpen, setIsOpen] = useState(false);
+  const { isOpen, setIsOpen, isDesktopCollapsed } = useSidebar();
 
   return (
     <>
-      {/* Mobile Toggle Button */}
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="lg:hidden fixed bottom-5 right-5 z-50 p-3.5 bg-amber-600 text-white rounded-full shadow-lg hover:bg-amber-500 active:scale-95 transition-all"
-        aria-label="Toggle navigation menu"
-      >
-        {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-      </button>
-
-      {/* Backdrop */}
+      {/* Mobile Drawer Backdrop */}
       {isOpen && (
         <div
           onClick={() => setIsOpen(false)}
-          className="lg:hidden fixed inset-0 z-40 bg-slate-950/70 backdrop-blur-xs"
+          className="lg:hidden fixed inset-0 z-40 bg-slate-950/75 backdrop-blur-xs transition-opacity"
         />
       )}
 
       {/* Sidebar Container */}
       <aside
         className={cn(
-          "fixed top-0 bottom-0 left-0 z-40 w-64 bg-slate-900 border-r border-slate-800 flex flex-col transition-transform duration-200 ease-in-out lg:translate-x-0",
-          isOpen ? "translate-x-0" : "-translate-x-full"
+          "fixed top-0 bottom-0 left-0 z-40 w-64 bg-slate-900 border-r border-slate-800 flex flex-col transition-transform duration-300 ease-in-out",
+          isOpen
+            ? "translate-x-0"
+            : isDesktopCollapsed
+            ? "-translate-x-full"
+            : "-translate-x-full lg:translate-x-0"
         )}
       >
         {/* Brand Header */}
-        <div className="h-16 flex items-center px-6 border-b border-slate-800 gap-3">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-amber-600 to-orange-500 flex items-center justify-center text-white font-extrabold shadow-sm">
-            C
-          </div>
-          <div>
-            <span className="font-bold text-slate-100 text-base tracking-tight">
-              CampusConnect
-            </span>
-            <div className="text-[10px] text-amber-400 font-semibold uppercase tracking-wider">
-              {userRole} Portal
+        <div className="h-16 flex items-center justify-between px-6 border-b border-slate-800">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-amber-600 to-orange-500 flex items-center justify-center text-white font-extrabold shadow-sm">
+              C
+            </div>
+            <div>
+              <span className="font-bold text-slate-100 text-base tracking-tight">
+                CampusConnect
+              </span>
+              <div className="text-[10px] text-amber-400 font-semibold uppercase tracking-wider">
+                {userRole} Portal
+              </div>
             </div>
           </div>
+
+          {/* Close button on mobile drawer */}
+          <button
+            onClick={() => setIsOpen(false)}
+            className="lg:hidden p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+            aria-label="Close navigation menu"
+          >
+            <X className="w-5 h-5" />
+          </button>
         </div>
 
         {/* Scrollable Navigation */}

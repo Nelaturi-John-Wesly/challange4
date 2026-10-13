@@ -1,8 +1,9 @@
 "use client";
 
+import { useSidebar } from "@/components/layout/SidebarContext";
 import { ThemeToggle } from "@/components/layout/ThemeToggle";
 import { Badge } from "@/components/ui/badge";
-import { LogOut, User as UserIcon } from "lucide-react";
+import { LogOut, Menu, User as UserIcon } from "lucide-react";
 import { signOut } from "next-auth/react";
 import React from "react";
 
@@ -16,10 +17,21 @@ interface TopbarProps {
 }
 
 export function Topbar({ user }: TopbarProps) {
+  const { toggleSidebar } = useSidebar();
+
   return (
-    <header className="h-16 border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md sticky top-0 z-30 px-6 flex items-center justify-between">
-      {/* Left Title / Branding Breadcrumb */}
-      <div className="flex items-center gap-3">
+    <header className="h-16 border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md sticky top-0 z-30 px-4 sm:px-6 flex items-center justify-between">
+      {/* Left Title / Branding Breadcrumb with 3-line Menu Icon */}
+      <div className="flex items-center gap-2 sm:gap-3">
+        <button
+          onClick={toggleSidebar}
+          aria-label="Toggle navigation menu"
+          title="Toggle Navigation Menu"
+          className="p-2 -ml-1 sm:-ml-2 rounded-xl text-slate-600 dark:text-slate-300 hover:text-amber-500 dark:hover:text-amber-400 hover:bg-slate-100 dark:hover:bg-slate-800/80 active:scale-95 transition-all focus:outline-hidden focus:ring-2 focus:ring-amber-500/30"
+        >
+          <Menu className="w-5 h-5" />
+        </button>
+
         <h1 className="text-base sm:text-lg font-bold text-slate-900 dark:text-slate-100">
           Campus Portal
         </h1>
