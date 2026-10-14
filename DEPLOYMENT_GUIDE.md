@@ -1,8 +1,8 @@
 # College Website & Campus Life Platform — Deployment & Project Summary
 
 > **Status:** Successfully Deployed to Vercel (Production)  
-> **Working Tree:** Clean (`git` commit: `42e1565`)  
-> **Local Path:** `C:\Users\johnf\.gemini\antigravity-ide\scratch\college-platform`
+> **Working Tree:** Clean (`git` commit: `48733cd`)  
+> **Local Path:** `c:\Users\johnf\college-platform`
 
 ---
 
@@ -11,7 +11,7 @@
 | Property | Value / Link |
 | :--- | :--- |
 | **Primary Production URL** | [https://college-platform-eosin.vercel.app](https://college-platform-eosin.vercel.app) |
-| **Direct Deployment URL** | [https://college-platform-76ztwo8ph-johnff340-4816.vercel.app](https://college-platform-76ztwo8ph-johnff340-4816.vercel.app) |
+| **Direct Deployment URL** | [https://college-platform-nl3yoor54-johnff340-4816.vercel.app](https://college-platform-nl3yoor54-johnff340-4816.vercel.app) |
 | **Hosting Platform** | Vercel (Production Edge, Node.js 24 runtime) |
 | **Deployment Mode** | Standard Public Web App (No tunnels or live dev servers needed) |
 
@@ -55,6 +55,7 @@ All routes are fully implemented, populated with realistic sample data, and styl
 - **`/research`** (*Neon Violet `#a855f7`*): IEEE/Nature research papers, citations, grants, lab equipment, and RA positions.
 - **`/campus-map`** (*Modern Teal Blueprint `#14b8a6`*): Interactive campus GPS blueprint, facility category pins, and walking pathfinder.
 - **`/cafeteria`** (*Warm Sunset Orange `#ea580c`*): Live canteen menu, express tray cart, instant food tokens (`#TK-XXXX`), and kitchen display system.
+- **`/gigs`** (*Futuristic Electric Amber / Gold `#f59e0b` & Indigo*): Campus Part-Time Work Marketplace with anti-scam escrow, study-work limits (15h/week, 3 tasks max), role-based posting, student application tracker, two-way settlement, and digital completion certificates.
 - **`/grievances`** (*Steel Blue `#3b82f6`*): Support ticket creation, multi-step vertical progression timeline, and resolution tracker.
 - **`/admin`** (*Crimson Authority `#dc2626`*): Institutional analytics, emergency alert broadcaster, and live audit feed.
 
