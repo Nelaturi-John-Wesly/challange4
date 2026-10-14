@@ -40,7 +40,7 @@ export const authOptions: AuthOptions = {
         try {
           user = await prisma.user.findUnique({
             where: { email },
-            include: { department: true },
+            include: { department: true, college: true },
           });
         } catch (dbErr) {
           console.warn("Prisma lookup failed, falling back to built-in credentials:", dbErr);
@@ -56,6 +56,12 @@ export const authOptions: AuthOptions = {
               role: user.role,
               avatar: user.avatar,
               departmentCode: user.department?.code || null,
+              collegeId: user.collegeId,
+              collegeName: user.college?.name || "Narasaraopeta Engineering College",
+              collegeCity: user.college?.city || "Narasaraopet",
+              collegeState: user.college?.state || "Andhra Pradesh",
+              collegeLogoUrl: user.college?.logoUrl || null,
+              collegeThemeColor: user.college?.themeColor || "#f59e0b",
             };
           }
         }
@@ -70,6 +76,12 @@ export const authOptions: AuthOptions = {
             role: demoUser.role,
             avatar: null,
             departmentCode: demoUser.dept,
+            collegeId: "col-nec",
+            collegeName: "Narasaraopeta Engineering College",
+            collegeCity: "Narasaraopet",
+            collegeState: "Andhra Pradesh",
+            collegeLogoUrl: null,
+            collegeThemeColor: "#f59e0b",
           };
         }
 
@@ -78,12 +90,28 @@ export const authOptions: AuthOptions = {
     }),
   ],
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger, session }) {
       if (user) {
         token.id = user.id;
         token.role = user.role;
         token.avatar = user.avatar;
         token.departmentCode = user.departmentCode;
+        token.collegeId = user.collegeId;
+        token.collegeName = user.collegeName;
+        token.collegeCity = user.collegeCity;
+        token.collegeState = user.collegeState;
+        token.collegeLogoUrl = user.collegeLogoUrl;
+        token.collegeThemeColor = user.collegeThemeColor;
+      }
+      // Support session.update() triggered on client
+      if (trigger === "update" && session?.user) {
+        if (session.user.name) token.name = session.user.name;
+        if (session.user.avatar !== undefined) token.avatar = session.user.avatar;
+        if (session.user.collegeId) token.collegeId = session.user.collegeId;
+        if (session.user.collegeName) token.collegeName = session.user.collegeName;
+        if (session.user.collegeCity) token.collegeCity = session.user.collegeCity;
+        if (session.user.collegeState) token.collegeState = session.user.collegeState;
+        if (session.user.collegeThemeColor) token.collegeThemeColor = session.user.collegeThemeColor;
       }
       return token;
     },
@@ -93,6 +121,12 @@ export const authOptions: AuthOptions = {
         session.user.role = token.role as Role;
         session.user.avatar = token.avatar as string | null;
         session.user.departmentCode = token.departmentCode as string | null;
+        session.user.collegeId = token.collegeId as string | null;
+        session.user.collegeName = token.collegeName as string | null;
+        session.user.collegeCity = token.collegeCity as string | null;
+        session.user.collegeState = token.collegeState as string | null;
+        session.user.collegeLogoUrl = token.collegeLogoUrl as string | null;
+        session.user.collegeThemeColor = token.collegeThemeColor as string | null;
       }
       return session;
     },

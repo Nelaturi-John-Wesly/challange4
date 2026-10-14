@@ -146,6 +146,22 @@ enum GrievanceStatus {
 // 1. CORE INSTITUTION & USER MANAGEMENT
 // -------------------------------------------------------------
 
+model College {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  city        String
+  state       String
+  country     String   @default("India")
+  logoUrl     String?  // Custom official logo or AI generated logo URL
+  logoSeed    String?  // Deterministic SVG seed / initials / emblem code
+  themeColor  String?  @default("#f59e0b")
+  isVerified  Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  users       User[]
+}
+
 model Department {
   id          String   @id @default(cuid())
   code        String   @unique // e.g., "CSE", "ECE", "MECH"
@@ -166,10 +182,23 @@ model User {
   role         Role        @default(STUDENT)
   avatar       String?
   phone        String?
+  bio          String?
+  skills       String?
+  githubUrl    String?
+  linkedinUrl  String?
+  collegeId    String?
+  college      College?    @relation(fields: [collegeId], references: [id])
   departmentId String?
   department   Department? @relation(fields: [departmentId], references: [id])
   createdAt    DateTime    @default(now())
   updatedAt    DateTime    @updatedAt
+
+  // User Preferences & Privacy Settings
+  notificationPrefs String? // JSON string: { academic: true, gigs: true, events: true, alerts: true }
+  themePreference   String? @default("dark")
+  accentColor       String? @default("#f59e0b")
+  hidePhone         Boolean @default(false)
+  hideEmail         Boolean @default(false)
 
   // Role Profile Extensions
   studentProfile   StudentProfile?

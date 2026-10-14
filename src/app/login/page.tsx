@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/card";
 import { useToast } from "@/components/shared/Toast";
 import {
   Briefcase,
+  Building2,
   CheckCircle2,
   Coffee,
   Eye,
@@ -16,8 +17,11 @@ import {
   Lock,
   LogIn,
   Mail,
+  MapPin,
   Phone,
+  PlusCircle,
   School,
+  Search,
   Send,
   ShieldCheck,
   User,
@@ -25,6 +29,7 @@ import {
   UserPlus,
   Users,
 } from "lucide-react";
+import { CollegeLogo } from "@/components/shared/CollegeLogo";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
@@ -128,13 +133,21 @@ export default function LoginPage() {
   const [enteredOtp, setEnteredOtp] = useState("");
   const [isSendingOtp, setIsSendingOtp] = useState(false);
 
-  // Departments list & feedback
+  // Departments & Colleges list & feedback
   const [departments, setDepartments] = useState(DEFAULT_DEPARTMENTS);
+  const [colleges, setColleges] = useState<any[]>([]);
+  const [selectedCollegeId, setSelectedCollegeId] = useState<string>("");
+  const [isAddingNewCollege, setIsAddingNewCollege] = useState(false);
+  const [customCollegeName, setCustomCollegeName] = useState("");
+  const [collegeCity, setCollegeCity] = useState("");
+  const [collegeState, setCollegeState] = useState("");
+  const [collegeFilter, setCollegeFilter] = useState("");
   const [isRegLoading, setIsRegLoading] = useState(false);
   const [regError, setRegError] = useState<string | null>(null);
   const [regSuccess, setRegSuccess] = useState<string | null>(null);
 
   useEffect(() => {
+    // 1. Fetch departments
     fetch("/api/auth/register")
       .then((res) => res.json())
       .then((data) => {
@@ -143,7 +156,39 @@ export default function LoginPage() {
         }
       })
       .catch(() => {});
+
+    // 2. Fetch colleges
+    fetch("/api/colleges")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.colleges && data.colleges.length > 0) {
+          setColleges(data.colleges);
+          const first = data.colleges[0];
+          setSelectedCollegeId(first.id);
+          setCollegeCity(first.city);
+          setCollegeState(first.state);
+        }
+      })
+      .catch(() => {});
   }, []);
+
+  const handleSelectCollege = (id: string) => {
+    if (id === "__NEW_COLLEGE__") {
+      setIsAddingNewCollege(true);
+      setSelectedCollegeId("__NEW_COLLEGE__");
+      setCustomCollegeName("");
+      setCollegeCity("");
+      setCollegeState("");
+    } else {
+      setIsAddingNewCollege(false);
+      setSelectedCollegeId(id);
+      const found = colleges.find((c) => c.id === id);
+      if (found) {
+        setCollegeCity(found.city);
+        setCollegeState(found.state);
+      }
+    }
+  };
 
   // Send Mock Email OTP with interactive Toast
   const handleSendOtp = () => {
@@ -275,6 +320,44 @@ export default function LoginPage() {
       return;
     }
 
+    // 1b. College Validation (Required)
+    if (isAddingNewCollege) {
+      if (!customCollegeName.trim() || customCollegeName.trim().length < 3) {
+        const msg = "Please enter your College Name (at least 3 characters).";
+        setRegError(msg);
+        setIsRegLoading(false);
+        toast({ title: "College Name Required", description: msg, variant: "warning" });
+        return;
+      }
+      if (/[<>{}[\]$\\/*]/.test(customCollegeName)) {
+        const msg = "College name contains invalid characters.";
+        setRegError(msg);
+        setIsRegLoading(false);
+        toast({ title: "Invalid Name", description: msg, variant: "warning" });
+        return;
+      }
+      if (!collegeCity.trim() || collegeCity.trim().length < 2) {
+        const msg = "Please enter the College City (at least 2 characters).";
+        setRegError(msg);
+        setIsRegLoading(false);
+        toast({ title: "City Required", description: msg, variant: "warning" });
+        return;
+      }
+      if (!collegeState.trim() || collegeState.trim().length < 2) {
+        const msg = "Please enter the College State (at least 2 characters).";
+        setRegError(msg);
+        setIsRegLoading(false);
+        toast({ title: "State Required", description: msg, variant: "warning" });
+        return;
+      }
+    } else if (!selectedCollegeId) {
+      const msg = "Please select your College / Institution from the list.";
+      setRegError(msg);
+      setIsRegLoading(false);
+      toast({ title: "College Selection Required", description: msg, variant: "warning" });
+      return;
+    }
+
     // 2. OTP Verification check
     if (!otpSent) {
       const msg = "Please click 'Send Verification OTP' to verify your college email.";
@@ -294,6 +377,8 @@ export default function LoginPage() {
 
     // 3. API Payload
     try {
+      const selectedCollegeObj = colleges.find((c) => c.id === selectedCollegeId);
+
       const payload = {
         name: regName,
         email: regEmail,
@@ -301,6 +386,10 @@ export default function LoginPage() {
         phone: regPhone,
         role: regRole,
         departmentCode: regDepartment,
+        collegeId: isAddingNewCollege ? null : selectedCollegeId,
+        collegeName: isAddingNewCollege ? customCollegeName.trim() : selectedCollegeObj?.name,
+        collegeCity: collegeCity.trim(),
+        collegeState: collegeState.trim(),
         rollNumber: regRollNumber || `ID-${Date.now().toString().slice(-5)}`,
         year: parseInt(regYear, 10),
         semester: (parseInt(regYear, 10) - 1) * 2 + 1,
@@ -625,6 +714,141 @@ export default function LoginPage() {
                           onChange={(e) => setRegEmail(e.target.value)}
                           placeholder="ananya@college.edu"
                           className="w-full pl-9 pr-3 py-2 rounded-lg bg-slate-950 border border-slate-700 text-white text-xs focus:border-amber-500"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Institution & Campus Location (Required) */}
+                  <div className="p-3.5 rounded-xl bg-slate-950/70 border border-slate-800 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <School className="w-4 h-4 text-amber-400" />
+                        <span className="text-xs font-bold text-white">College Affiliation & Location *</span>
+                      </div>
+                      {/* Live Emblem Preview */}
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] text-slate-400">Emblem Preview:</span>
+                        <CollegeLogo
+                          collegeName={
+                            isAddingNewCollege
+                              ? customCollegeName || "Campus College"
+                              : colleges.find((c) => c.id === selectedCollegeId)?.name || "Campus College"
+                          }
+                          size="xs"
+                        />
+                      </div>
+                    </div>
+
+                    {/* College Name Selection / Autocomplete */}
+                    <div className="space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <label className="text-xs font-medium text-slate-300">College Name *</label>
+                        {!isAddingNewCollege ? (
+                          <button
+                            type="button"
+                            onClick={() => handleSelectCollege("__NEW_COLLEGE__")}
+                            className="text-[11px] text-amber-400 hover:text-amber-300 hover:underline flex items-center gap-1 cursor-pointer"
+                          >
+                            <PlusCircle className="w-3 h-3" />
+                            My college is not listed → Add new
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (colleges.length > 0) handleSelectCollege(colleges[0].id);
+                            }}
+                            className="text-[11px] text-sky-400 hover:text-sky-300 hover:underline cursor-pointer"
+                          >
+                            ← Back to verified colleges list
+                          </button>
+                        )}
+                      </div>
+
+                      {!isAddingNewCollege ? (
+                        <div className="space-y-2">
+                          <select
+                            value={selectedCollegeId}
+                            onChange={(e) => handleSelectCollege(e.target.value)}
+                            className="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-white text-xs focus:border-amber-500 cursor-pointer"
+                          >
+                            {colleges.map((c) => (
+                              <option key={c.id} value={c.id}>
+                                {c.name} — {c.city}, {c.state}
+                              </option>
+                            ))}
+                            <option value="__NEW_COLLEGE__">
+                              ✨ My college is not listed → Add new college
+                            </option>
+                          </select>
+                        </div>
+                      ) : (
+                        <div className="space-y-1">
+                          <div className="relative">
+                            <Building2 className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-3" />
+                            <input
+                              type="text"
+                              required
+                              value={customCollegeName}
+                              onChange={(e) => setCustomCollegeName(e.target.value)}
+                              placeholder="Enter official college name (e.g. Stanford University)"
+                              className="w-full pl-9 pr-3 py-2 rounded-lg bg-slate-900 border border-amber-500/50 text-white text-xs focus:border-amber-500"
+                            />
+                          </div>
+                          <p className="text-[10px] text-amber-400/90">
+                            A unique deterministic SVG emblem & custom color theme will automatically be generated!
+                          </p>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* College Location: City & State */}
+                    <div className="grid grid-cols-2 gap-3 pt-1">
+                      <div className="space-y-1">
+                        <label className="text-xs font-medium text-slate-300 flex items-center justify-between">
+                          <span>City *</span>
+                          {!isAddingNewCollege && (
+                            <span className="text-[10px] text-emerald-400 font-semibold">Auto-filled</span>
+                          )}
+                        </label>
+                        <div className="relative">
+                          <MapPin className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-2.5" />
+                          <input
+                            type="text"
+                            required
+                            readOnly={!isAddingNewCollege}
+                            value={collegeCity}
+                            onChange={(e) => setCollegeCity(e.target.value)}
+                            placeholder="e.g. Narasaraopet"
+                            className={`w-full pl-9 pr-3 py-2 rounded-lg text-xs border ${
+                              !isAddingNewCollege
+                                ? "bg-slate-900/60 border-slate-800 text-slate-300 cursor-not-allowed"
+                                : "bg-slate-900 border-slate-700 text-white focus:border-amber-500"
+                            }`}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="text-xs font-medium text-slate-300 flex items-center justify-between">
+                          <span>State *</span>
+                          {!isAddingNewCollege && (
+                            <span className="text-[10px] text-emerald-400 font-semibold">Auto-filled</span>
+                          )}
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          readOnly={!isAddingNewCollege}
+                          value={collegeState}
+                          onChange={(e) => setCollegeState(e.target.value)}
+                          placeholder="e.g. Andhra Pradesh"
+                          className={`w-full px-3 py-2 rounded-lg text-xs border ${
+                            !isAddingNewCollege
+                              ? "bg-slate-900/60 border-slate-800 text-slate-300 cursor-not-allowed"
+                              : "bg-slate-900 border-slate-700 text-white focus:border-amber-500"
+                          }`}
                         />
                       </div>
                     </div>

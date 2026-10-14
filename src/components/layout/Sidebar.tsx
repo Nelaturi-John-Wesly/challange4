@@ -26,7 +26,9 @@ import {
   Trophy,
   Users,
   X,
+  UserCircle,
 } from "lucide-react";
+import { CollegeLogo } from "@/components/shared/CollegeLogo";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import React from "react";
@@ -48,6 +50,13 @@ const navSections: { title: string; items: NavItem[] }[] = [
         href: "/dashboard",
         icon: LayoutDashboard,
         roles: ["STUDENT", "FACULTY", "ADMIN", "RECRUITER", "ALUMNI", "CLUB_LEAD", "CAFETERIA_STAFF"],
+      },
+      {
+        name: "My Profile",
+        href: "/profile",
+        icon: UserCircle,
+        roles: ["STUDENT", "FACULTY", "ADMIN", "RECRUITER", "ALUMNI", "CLUB_LEAD", "CAFETERIA_STAFF"],
+        badge: "Editable",
       },
       {
         name: "Smart Attendance",
@@ -191,9 +200,23 @@ const navSections: { title: string; items: NavItem[] }[] = [
   },
 ];
 
-export function Sidebar({ userRole }: { userRole: Role }) {
+interface SidebarProps {
+  userRole: Role;
+  user?: {
+    name?: string;
+    collegeName?: string | null;
+    collegeCity?: string | null;
+    collegeLogoUrl?: string | null;
+    collegeThemeColor?: string | null;
+  } | null;
+}
+
+export function Sidebar({ userRole, user }: SidebarProps) {
   const pathname = usePathname();
   const { isOpen, closeSidebar } = useSidebar();
+
+  const collegeName = user?.collegeName || "Narasaraopeta Engineering College";
+  const collegeCity = user?.collegeCity || "Narasaraopet";
 
   // Automatically close sidebar whenever user navigates
   React.useEffect(() => {
@@ -218,18 +241,24 @@ export function Sidebar({ userRole }: { userRole: Role }) {
           isOpen ? "translate-x-0" : "-translate-x-full"
         )}
       >
-        {/* Brand Header with Close (X) button */}
-        <div className="h-16 flex items-center justify-between px-6 border-b border-slate-800">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-amber-600 to-orange-500 flex items-center justify-center text-white font-extrabold shadow-sm">
-              C
-            </div>
-            <div>
-              <span className="font-bold text-slate-100 text-base tracking-tight">
-                CampusConnect
+        {/* Brand Header with College Logo and Close (X) button */}
+        <div className="h-16 flex items-center justify-between px-5 border-b border-slate-800">
+          <div className="flex items-center gap-3 min-w-0">
+            <CollegeLogo
+              collegeName={collegeName}
+              logoUrl={user?.collegeLogoUrl}
+              themeColor={user?.collegeThemeColor}
+              size="sm"
+              className="shrink-0"
+            />
+            <div className="min-w-0 text-left">
+              <span className="font-bold text-slate-100 text-sm tracking-tight truncate block">
+                {collegeName}
               </span>
-              <div className="text-[10px] text-amber-400 font-semibold uppercase tracking-wider">
-                {userRole} Portal
+              <div className="text-[10px] text-amber-400 font-semibold uppercase tracking-wider flex items-center gap-1.5">
+                <span>{userRole} Portal</span>
+                <span className="text-slate-500">·</span>
+                <span className="text-slate-400 normal-case">{collegeCity}</span>
               </div>
             </div>
           </div>

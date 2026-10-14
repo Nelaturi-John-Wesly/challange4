@@ -45,6 +45,12 @@ export async function POST(req: Request) {
       phone,
       role = "STUDENT",
       departmentCode,
+      // College Details (Required)
+      collegeId,
+      collegeName,
+      collegeCity,
+      collegeState,
+      collegeCountry = "India",
       // Student details
       rollNumber,
       batch,
@@ -91,6 +97,64 @@ export async function POST(req: Request) {
     if (!password || typeof password !== "string" || password.length < 6) {
       return NextResponse.json(
         { error: "Password must be at least 6 characters long." },
+        { status: 400 }
+      );
+    }
+
+    // 1b. College Validation & Resolution (Required)
+    let targetCollege = null;
+    if (collegeId) {
+      targetCollege = await prisma.college.findUnique({
+        where: { id: collegeId },
+      });
+    }
+
+    if (!targetCollege && collegeName) {
+      const { normalizeCollegeName, validateCollegeInput, getCollegeLogoConfig } = await import("@/lib/college");
+      const validation = validateCollegeInput({
+        name: collegeName,
+        city: collegeCity || "",
+        state: collegeState || "",
+      });
+
+      if (!validation.valid) {
+        return NextResponse.json(
+          { error: validation.error || "Please provide valid college details." },
+          { status: 400 }
+        );
+      }
+
+      const normalizedName = normalizeCollegeName(collegeName);
+      // Check existing case-insensitive
+      const allColleges = await prisma.college.findMany();
+      targetCollege = allColleges.find(
+        (c) => c.name.toLowerCase().trim() === normalizedName.toLowerCase().trim()
+      );
+
+      if (!targetCollege) {
+        const logoCfg = getCollegeLogoConfig(normalizedName);
+        targetCollege = await prisma.college.create({
+          data: {
+            name: normalizedName,
+            city: collegeCity.trim(),
+            state: collegeState.trim(),
+            country: (collegeCountry || "India").trim(),
+            themeColor: logoCfg.primaryColor,
+            logoSeed: logoCfg.initials,
+            isVerified: true,
+          },
+        });
+      }
+    }
+
+    if (!targetCollege) {
+      // Fallback: pick the first available college in DB
+      targetCollege = await prisma.college.findFirst();
+    }
+
+    if (!targetCollege) {
+      return NextResponse.json(
+        { error: "College Name and Location (City + State) are required." },
         { status: 400 }
       );
     }
@@ -194,6 +258,7 @@ export async function POST(req: Request) {
           phone: phone ? phone.trim() : null,
           role: normalizedRole,
           departmentId: targetDepartment?.id || null,
+          collegeId: targetCollege.id,
         },
       });
 

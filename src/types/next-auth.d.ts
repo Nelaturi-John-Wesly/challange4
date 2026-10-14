@@ -9,6 +9,12 @@ declare module "next-auth" {
     role: Role;
     avatar?: string | null;
     departmentCode?: string | null;
+    collegeId?: string | null;
+    collegeName?: string | null;
+    collegeCity?: string | null;
+    collegeState?: string | null;
+    collegeLogoUrl?: string | null;
+    collegeThemeColor?: string | null;
   }
 
   interface Session {
@@ -19,6 +25,12 @@ declare module "next-auth" {
       role: Role;
       avatar?: string | null;
       departmentCode?: string | null;
+      collegeId?: string | null;
+      collegeName?: string | null;
+      collegeCity?: string | null;
+      collegeState?: string | null;
+      collegeLogoUrl?: string | null;
+      collegeThemeColor?: string | null;
     };
   }
 }
@@ -29,5 +41,11 @@ declare module "next-auth/jwt" {
     role: Role;
     departmentCode?: string | null;
     avatar?: string | null;
+    collegeId?: string | null;
+    collegeName?: string | null;
+    collegeCity?: string | null;
+    collegeState?: string | null;
+    collegeLogoUrl?: string | null;
+    collegeThemeColor?: string | null;
   }
 }

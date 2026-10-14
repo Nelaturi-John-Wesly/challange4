@@ -21,15 +21,32 @@ import {
   MapPin,
   Plus,
   Sparkles,
+  School,
   Users,
 } from "lucide-react";
 import { INITIAL_CAMPUS_GIGS } from "@/lib/gigs";
+import { CollegeLogo } from "@/components/shared/CollegeLogo";
+import { CompleteProfilePrompt } from "@/components/profile/CompleteProfilePrompt";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
 export default async function DashboardPage() {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
+
+  let userCollege: any = null;
+  if (user.collegeId) {
+    try {
+      userCollege = await prisma.college.findUnique({
+        where: { id: user.collegeId },
+      });
+    } catch {}
+  }
+  const collegeName = userCollege?.name || user.collegeName || "Narasaraopeta Engineering College";
+  const collegeCity = userCollege?.city || user.collegeCity || "Narasaraopet";
+  const collegeState = userCollege?.state || user.collegeState || "Andhra Pradesh";
+  const collegeLogoUrl = userCollege?.logoUrl || user.collegeLogoUrl || null;
+  const collegeThemeColor = userCollege?.themeColor || user.collegeThemeColor || "#f59e0b";
 
   // Fetch Role-Specific Dashboard Data
   if (user.role === "STUDENT") {
@@ -175,20 +192,50 @@ export default async function DashboardPage() {
 
     return (
       <div className="space-y-8 text-left">
-        {/* Welcome Banner */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-6 rounded-2xl bg-gradient-to-r from-amber-600/10 via-orange-600/10 to-amber-600/5 border border-amber-500/20">
-          <div>
-            <div className="flex items-center gap-2">
-              <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-slate-100">
-                Welcome back, {user.name}!
-              </h2>
-              <Badge variant="success">Active Student</Badge>
+        {/* Complete Profile Prompt (One-time setup if college unassigned) */}
+        <CompleteProfilePrompt
+          currentCollegeId={user.collegeId}
+          currentCollegeName={collegeName}
+        />
+
+        {/* Welcome Banner with College Branding */}
+        <div
+          className="flex flex-col sm:flex-row sm:items-center justify-between gap-5 p-6 rounded-2xl bg-gradient-to-r from-amber-600/10 via-orange-600/10 to-amber-600/5 border border-amber-500/20 shadow-md backdrop-blur-xs"
+          style={{ borderColor: collegeThemeColor + "35" }}
+        >
+          <div className="flex items-center gap-4">
+            <CollegeLogo
+              collegeName={collegeName}
+              logoUrl={collegeLogoUrl}
+              themeColor={collegeThemeColor}
+              size="lg"
+              className="hidden sm:flex shrink-0 shadow-lg"
+            />
+            <div>
+              <div className="flex flex-wrap items-center gap-2">
+                <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight">
+                  Welcome back, {user.name}!
+                </h2>
+                <Badge variant="success">Active Student</Badge>
+              </div>
+
+              {/* College & Location Badge */}
+              <div className="flex flex-wrap items-center gap-1.5 text-xs text-amber-500 font-semibold mt-1">
+                <School className="w-3.5 h-3.5 shrink-0" />
+                <span className="text-slate-900 dark:text-slate-100 font-bold">{collegeName}</span>
+                <span className="text-slate-400">·</span>
+                <span className="text-slate-500 dark:text-slate-400 font-medium">
+                  {collegeCity}, {collegeState}
+                </span>
+              </div>
+
+              <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1.5">
+                Roll No: <b>{studentProfile?.rollNumber || "22ECE1047"}</b> · Year {studentProfile?.year || 3}, Sem {studentProfile?.semester || 5} (Sec {studentProfile?.section || "A"}) · CGPA: <b>{studentProfile?.cgpa || 8.4}</b>
+              </p>
             </div>
-            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
-              Roll No: <b>{studentProfile?.rollNumber}</b> · Year {studentProfile?.year}, Sem {studentProfile?.semester} (Sec {studentProfile?.section}) · CGPA: <b>{studentProfile?.cgpa}</b>
-            </p>
           </div>
-          <div className="flex gap-2">
+
+          <div className="flex items-center gap-2 shrink-0">
             <Link href="/id-card">
               <Button variant="outline" size="sm" className="gap-2">
                 <IdCard className="w-4 h-4 text-amber-500" />
@@ -496,17 +543,37 @@ export default async function DashboardPage() {
 
     return (
       <div className="space-y-8 text-left">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-6 rounded-2xl bg-gradient-to-r from-emerald-600/10 via-teal-600/10 to-emerald-600/5 border border-emerald-500/20">
-          <div>
-            <div className="flex items-center gap-2">
-              <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-slate-100">
-                Welcome, {user.name}
-              </h2>
-              <Badge variant="success">Faculty Portal</Badge>
+        <CompleteProfilePrompt
+          currentCollegeId={user.collegeId}
+          currentCollegeName={collegeName}
+        />
+
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-5 p-6 rounded-2xl bg-gradient-to-r from-emerald-600/10 via-teal-600/10 to-emerald-600/5 border border-emerald-500/20 shadow-md">
+          <div className="flex items-center gap-4">
+            <CollegeLogo
+              collegeName={collegeName}
+              logoUrl={collegeLogoUrl}
+              themeColor={collegeThemeColor}
+              size="lg"
+              className="hidden sm:flex shrink-0 shadow-lg"
+            />
+            <div>
+              <div className="flex items-center gap-2">
+                <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-slate-100">
+                  Welcome, {user.name}
+                </h2>
+                <Badge variant="success">Faculty Portal</Badge>
+              </div>
+              <div className="flex items-center gap-1.5 text-xs text-teal-400 font-semibold mt-1">
+                <School className="w-3.5 h-3.5 shrink-0" />
+                <span className="text-slate-900 dark:text-slate-100 font-bold">{collegeName}</span>
+                <span className="text-slate-400">·</span>
+                <span className="text-slate-500 dark:text-slate-400 font-medium">{collegeCity}, {collegeState}</span>
+              </div>
+              <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
+                {faculty?.designation} · {faculty?.cabinNumber}
+              </p>
             </div>
-            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
-              {faculty?.designation} · {faculty?.cabinNumber}
-            </p>
           </div>
           <div className="flex gap-2">
             <Link href="/attendance/mark">
