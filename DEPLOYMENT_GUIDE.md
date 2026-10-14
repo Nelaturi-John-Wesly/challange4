@@ -11,7 +11,8 @@
 | Property | Value / Link |
 | :--- | :--- |
 | **Primary Production URL** | [https://college-platform-eosin.vercel.app](https://college-platform-eosin.vercel.app) |
-| **Direct Deployment URL** | [https://college-platform-jbdv7ozd1-johnff340-4816.vercel.app](https://college-platform-jbdv7ozd1-johnff340-4816.vercel.app) |
+| **Direct Deployment URL** | [https://college-platform-g2687bpa1-johnff340-4816.vercel.app](https://college-platform-g2687bpa1-johnff340-4816.vercel.app) |
+| **GitHub Repository (Public)** | [https://github.com/Nelaturi-John-Wesly/challange4](https://github.com/Nelaturi-John-Wesly/challange4) |
 | **Hosting Platform** | Vercel (Production Edge, Node.js 24 runtime) |
 | **Deployment Mode** | Standard Public Web App (No tunnels or live dev servers needed) |
 
