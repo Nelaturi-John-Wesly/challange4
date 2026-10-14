@@ -723,6 +723,172 @@ model Notification {
   message   String
   link      String?
   isRead    Boolean  @default(false)
-  type      String // "ATTENDANCE", "FEE", "ASSIGNMENT", "EVENT", "PLACEMENT"
+  type      String // "ATTENDANCE", "FEE", "ASSIGNMENT", "EVENT", "PLACEMENT", "GIG"
   createdAt DateTime @default(now())
 }
+
+// -------------------------------------------------------------
+// 11. CAMPUS GIGS (STUDENT PART-TIME WORK MARKETPLACE)
+// -------------------------------------------------------------
+
+enum GigStatus {
+  PENDING_APPROVAL
+  OPEN
+  IN_PROGRESS
+  SUBMITTED
+  COMPLETED
+  CANCELLED
+  EXPIRED
+  DISPUTED
+}
+
+enum GigCategory {
+  TEACHING_TUTORING
+  EVENTS_HELP
+  LAB_RESEARCH
+  DESIGN_CONTENT
+  DATA_ENTRY
+  TECH_CODING
+  CAMPUS_ERRANDS
+  OTHER
+}
+
+enum GigRewardType {
+  CASH
+  CANTEEN_COUPON
+  CERTIFICATE
+  VOLUNTEER_HOURS
+  OTHER
+}
+
+enum GigLocationType {
+  ON_CAMPUS
+  REMOTE
+}
+
+enum GigApplicationStatus {
+  APPLIED
+  ACCEPTED
+  REJECTED
+  WITHDRAWN
+}
+
+enum GigSubmissionStatus {
+  SUBMITTED
+  REVISION_REQUESTED
+  APPROVED
+  REJECTED
+}
+
+enum GigTransactionStatus {
+  PENDING
+  PAID
+  RECEIVED
+}
+
+model CampusGig {
+  id                String            @id @default(cuid())
+  title             String
+  description       String
+  category          GigCategory       @default(OTHER)
+  postedById        String
+  posterName        String
+  posterRole        String            @default("FACULTY")
+  posterDepartment  String?
+  posterVerified    Boolean           @default(true)
+  rewardType        GigRewardType     @default(CASH)
+  rewardAmount      Float?
+  rewardDescription String
+  numberOfSlots     Int               @default(1)
+  slotsFilled       Int               @default(0)
+  deadline          DateTime
+  estimatedHours    Float             @default(5.0)
+  location          GigLocationType   @default(ON_CAMPUS)
+  locationDetails   String?
+  requiredSkills    String            @default("Communication") // Comma-separated or JSON
+  attachments       String?
+  status            GigStatus         @default(OPEN)
+  rejectionReason   String?
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+
+  applications      GigApplication[]
+  submissions       GigSubmission[]
+  ratings           GigRating[]
+  transactions      GigTransaction[]
+  reports           GigReport[]
+}
+
+model GigApplication {
+  id            String               @id @default(cuid())
+  gigId         String
+  gig           CampusGig            @relation(fields: [gigId], references: [id], onDelete: Cascade)
+  studentId     String
+  studentName   String
+  studentEmail  String?
+  studentDept   String?
+  studentYear   Int?
+  studentRating Float                @default(5.0)
+  message       String
+  status        GigApplicationStatus @default(APPLIED)
+  appliedAt     DateTime             @default(now())
+  updatedAt     DateTime             @updatedAt
+}
+
+model GigSubmission {
+  id            String              @id @default(cuid())
+  gigId         String
+  gig           CampusGig           @relation(fields: [gigId], references: [id], onDelete: Cascade)
+  studentId     String
+  studentName   String              @default("Student")
+  notes         String
+  filesOrLinks  String              @default("[]") // JSON string or URL
+  status        GigSubmissionStatus @default(SUBMITTED)
+  revisionNotes String?
+  submittedAt   DateTime            @default(now())
+  reviewedAt    DateTime?
+}
+
+model GigRating {
+  id         String    @id @default(cuid())
+  gigId      String
+  gig        CampusGig @relation(fields: [gigId], references: [id], onDelete: Cascade)
+  fromUserId String
+  fromName   String    @default("User")
+  toUserId   String
+  toName     String    @default("User")
+  role       String    @default("POSTER") // POSTER or STUDENT
+  stars      Int       @default(5)
+  comment    String
+  createdAt  DateTime  @default(now())
+}
+
+model GigTransaction {
+  id                String               @id @default(cuid())
+  gigId             String
+  gig               CampusGig            @relation(fields: [gigId], references: [id], onDelete: Cascade)
+  studentId         String
+  studentName       String
+  rewardType        GigRewardType        @default(CASH)
+  amount            Float?
+  rewardDescription String
+  status            GigTransactionStatus @default(PENDING)
+  posterConfirmed   Boolean              @default(false)
+  studentConfirmed  Boolean              @default(false)
+  transactionRef    String?
+  createdAt         DateTime             @default(now())
+  settledAt         DateTime?
+}
+
+model GigReport {
+  id             String    @id @default(cuid())
+  gigId          String
+  gig            CampusGig @relation(fields: [gigId], references: [id], onDelete: Cascade)
+  reportedById   String
+  reportedByName String
+  reason         String
+  details        String
+  status         String    @default("PENDING") // PENDING, RESOLVED, DISMISSED
+  createdAt      DateTime  @default(now())
+}
+

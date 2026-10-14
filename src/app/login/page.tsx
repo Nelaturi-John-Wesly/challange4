@@ -72,6 +72,14 @@ const DEMO_ACCOUNTS = [
     color: "border-emerald-500/40 text-emerald-400 bg-emerald-500/10",
   },
   {
+    role: "Faculty",
+    name: "Prof. Sana Iqbal",
+    email: "faculty@college.edu",
+    password: "Faculty@123",
+    badge: "CSE Dept",
+    color: "border-teal-500/40 text-teal-400 bg-teal-500/10",
+  },
+  {
     role: "Alumni",
     name: "Vikramaditya Rao (Google)",
     email: "alumni@college.edu",

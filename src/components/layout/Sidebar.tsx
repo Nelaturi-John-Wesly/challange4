@@ -8,6 +8,7 @@ import {
   Award,
   Bell,
   BookOpen,
+  Briefcase,
   Calendar,
   Clock,
   Coffee,
@@ -137,6 +138,13 @@ const navSections: { title: string; items: NavItem[] }[] = [
         href: "/placements",
         icon: Award,
         roles: ["STUDENT", "RECRUITER", "ADMIN", "ALUMNI"],
+      },
+      {
+        name: "Campus Gigs",
+        href: "/gigs",
+        icon: Briefcase,
+        roles: ["STUDENT", "FACULTY", "ADMIN", "CLUB_LEAD"],
+        badge: "Earn",
       },
       {
         name: "Alumni Directory",

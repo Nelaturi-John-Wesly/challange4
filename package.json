@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "seed": "tsx prisma/seed.ts",
-    "test": "tsx --test tests/phase1.test.ts"
+    "test": "tsx --test tests/phase1.test.ts tests/gigs.test.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

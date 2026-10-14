@@ -1,6 +1,25 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import {
+  CampusGig,
+  GigApplication,
+  GigSubmission,
+  GigRating,
+  GigTransaction,
+  GigReport,
+  INITIAL_CAMPUS_GIGS,
+  INITIAL_GIG_APPLICATIONS,
+  INITIAL_GIG_SUBMISSIONS,
+  INITIAL_GIG_RATINGS,
+  INITIAL_GIG_TRANSACTIONS,
+  INITIAL_GIG_REPORTS,
+  MAX_ACTIVE_GIGS_PER_STUDENT,
+  MAX_WEEKLY_HOURS_PER_STUDENT,
+  containsProhibitedFeeKeywords,
+} from "./gigs";
+
+export * from "./gigs";
 
 // ============================================================================
 // NOTIFICATION SYSTEM
@@ -10,7 +29,7 @@ export interface AppNotification {
   userId?: string;
   title: string;
   message: string;
-  type: "CLUB" | "EVENT" | "SPORTS" | "PLACEMENT" | "CANTEEN" | "GRIEVANCE" | "SYSTEM";
+  type: "CLUB" | "EVENT" | "SPORTS" | "PLACEMENT" | "CANTEEN" | "GRIEVANCE" | "SYSTEM" | "GIG";
   link?: string;
   isRead: boolean;
   createdAt: string;
@@ -575,6 +594,14 @@ class GlobalAppStore {
   drives: PlacementDrive[] = INITIAL_DRIVES;
   grievances: GrievanceTicket[] = INITIAL_GRIEVANCES;
 
+  // Campus Gigs State
+  gigs: CampusGig[] = INITIAL_CAMPUS_GIGS;
+  gigApplications: GigApplication[] = INITIAL_GIG_APPLICATIONS;
+  gigSubmissions: GigSubmission[] = INITIAL_GIG_SUBMISSIONS;
+  gigRatings: GigRating[] = INITIAL_GIG_RATINGS;
+  gigTransactions: GigTransaction[] = INITIAL_GIG_TRANSACTIONS;
+  gigReports: GigReport[] = INITIAL_GIG_REPORTS;
+
   private listeners = new Set<() => void>();
 
   subscribe(listener: () => void) {
@@ -950,6 +977,437 @@ class GlobalAppStore {
       type: "GRIEVANCE",
       link: "/grievances",
     });
+
+    this.notify();
+  }
+
+  // ==========================================================================
+  // CAMPUS GIGS ACTIONS
+  // ==========================================================================
+
+  applyToGig(params: {
+    gigId: string;
+    studentId: string;
+    studentName: string;
+    studentEmail?: string;
+    studentDept?: string;
+    studentYear?: number;
+    studentRating?: number;
+    message: string;
+  }): { success: boolean; error?: string } {
+    const gig = this.gigs.find((g) => g.id === params.gigId);
+    if (!gig) return { success: false, error: "Gig not found." };
+
+    if (gig.status !== "OPEN") {
+      return { success: false, error: "This gig is no longer accepting applications." };
+    }
+
+    if (gig.postedBy.id === params.studentId) {
+      return { success: false, error: "You cannot apply to your own gig." };
+    }
+
+    // Rule: Cannot apply twice
+    const existing = this.gigApplications.find(
+      (a) => a.gigId === params.gigId && a.studentId === params.studentId && a.status !== "WITHDRAWN"
+    );
+    if (existing) {
+      return { success: false, error: "You have already applied to this gig." };
+    }
+
+    // Rule: Max 3 active gigs
+    const activeApplications = this.gigApplications.filter(
+      (a) => a.studentId === params.studentId && a.status === "ACCEPTED"
+    );
+    const activeGigs = this.gigs.filter(
+      (g) => activeApplications.some((a) => a.gigId === g.id) && (g.status === "IN_PROGRESS" || g.status === "SUBMITTED")
+    );
+    if (activeGigs.length >= MAX_ACTIVE_GIGS_PER_STUDENT) {
+      return {
+        success: false,
+        error: `Active gig limit reached (${MAX_ACTIVE_GIGS_PER_STUDENT} concurrent gigs maximum). Complete an active task first.`,
+      };
+    }
+
+    // Rule: Weekly hours cap (15 hrs)
+    const currentWeeklyHours = activeGigs.reduce((acc, g) => acc + g.estimatedHours, 0);
+    if (currentWeeklyHours + gig.estimatedHours > MAX_WEEKLY_HOURS_PER_STUDENT) {
+      return {
+        success: false,
+        error: `Weekly study-work cap exceeded. Current active commitment: ${currentWeeklyHours} hrs/week. Adding ${gig.estimatedHours} hrs exceeds the institutional ${MAX_WEEKLY_HOURS_PER_STUDENT} hrs/week limit.`,
+      };
+    }
+
+    const newApp: GigApplication = {
+      id: `app-${Date.now()}`,
+      gigId: params.gigId,
+      studentId: params.studentId,
+      studentName: params.studentName,
+      studentEmail: params.studentEmail,
+      studentDept: params.studentDept,
+      studentYear: params.studentYear,
+      studentRating: params.studentRating || 5.0,
+      message: params.message,
+      status: "APPLIED",
+      appliedAt: new Date().toISOString(),
+    };
+
+    this.gigApplications = [newApp, ...this.gigApplications];
+
+    // Notification to poster
+    this.dispatchNotification({
+      title: `New Applicant for: ${gig.title.slice(0, 32)}...`,
+      message: `${params.studentName} (${params.studentDept || "Student"}) submitted an application.`,
+      type: "GIG",
+      link: "/gigs/my-gigs",
+    });
+
+    // Notification to student
+    this.dispatchNotification({
+      title: "Gig Application Dispatched",
+      message: `Your application for "${gig.title}" has been sent to ${gig.postedBy.name}.`,
+      type: "GIG",
+      link: "/gigs/my-gigs",
+    });
+
+    this.notify();
+    return { success: true };
+  }
+
+  createGig(gigData: Omit<CampusGig, "id" | "createdAt" | "slotsFilled" | "status">): {
+    success: boolean;
+    error?: string;
+    gig?: CampusGig;
+  } {
+    // Safety check: Block upfront fee requests
+    if (containsProhibitedFeeKeywords(`${gigData.title} ${gigData.description}`)) {
+      return {
+        success: false,
+        error: "Anti-Scam Violation: Gigs requesting student payment, application fees, or security deposits are strictly prohibited on campus.",
+      };
+    }
+
+    // Role Rule: Students require Admin approval; Faculty/Staff/Club/Admin go live immediately
+    const requiresApproval = gigData.postedBy.role === "STUDENT";
+    const status: CampusGig["status"] = requiresApproval ? "PENDING_APPROVAL" : "OPEN";
+
+    const newGig: CampusGig = {
+      ...gigData,
+      id: `gig-${Date.now()}`,
+      slotsFilled: 0,
+      status,
+      createdAt: new Date().toISOString(),
+    };
+
+    this.gigs = [newGig, ...this.gigs];
+
+    if (requiresApproval) {
+      this.dispatchNotification({
+        title: "Gig Pending Institutional Approval",
+        message: `Student gig "${newGig.title}" was submitted and is awaiting administrator verification.`,
+        type: "GIG",
+        link: "/gigs/admin",
+      });
+    } else {
+      this.dispatchNotification({
+        title: "Campus Gig Published!",
+        message: `Your task "${newGig.title}" is now open for campus student applicants.`,
+        type: "GIG",
+        link: "/gigs",
+      });
+    }
+
+    this.notify();
+    return { success: true, gig: newGig };
+  }
+
+  approveGig(gigId: string) {
+    this.gigs = this.gigs.map((g) => (g.id === gigId ? { ...g, status: "OPEN" as const } : g));
+    const gig = this.gigs.find((g) => g.id === gigId);
+
+    this.dispatchNotification({
+      title: "Gig Approved & Live!",
+      message: `"${gig?.title}" was reviewed and approved by administration.`,
+      type: "GIG",
+      link: `/gigs/${gigId}`,
+    });
+
+    this.notify();
+  }
+
+  rejectGig(gigId: string, reason: string) {
+    this.gigs = this.gigs.map((g) =>
+      g.id === gigId ? { ...g, status: "CANCELLED" as const, rejectionReason: reason } : g
+    );
+    const gig = this.gigs.find((g) => g.id === gigId);
+
+    this.dispatchNotification({
+      title: "Gig Submission Not Approved",
+      message: `"${gig?.title}" could not be approved. Reason: ${reason}`,
+      type: "GIG",
+      link: "/gigs/my-gigs",
+    });
+
+    this.notify();
+  }
+
+  acceptApplicant(applicationId: string) {
+    const app = this.gigApplications.find((a) => a.id === applicationId);
+    if (!app) return;
+
+    this.gigApplications = this.gigApplications.map((a) =>
+      a.id === applicationId ? { ...a, status: "ACCEPTED" as const } : a
+    );
+
+    // Update gig slots and status
+    this.gigs = this.gigs.map((g) => {
+      if (g.id !== app.gigId) return g;
+      const newSlotsFilled = g.slotsFilled + 1;
+      const isFilled = newSlotsFilled >= g.numberOfSlots;
+      return {
+        ...g,
+        slotsFilled: newSlotsFilled,
+        status: isFilled ? ("IN_PROGRESS" as const) : g.status,
+      };
+    });
+
+    const gig = this.gigs.find((g) => g.id === app.gigId);
+
+    this.dispatchNotification({
+      title: "Application Accepted!",
+      message: `Congratulations! ${gig?.postedBy.name} accepted your application for "${gig?.title}".`,
+      type: "GIG",
+      link: "/gigs/my-gigs",
+    });
+
+    this.notify();
+  }
+
+  rejectApplicant(applicationId: string) {
+    const app = this.gigApplications.find((a) => a.id === applicationId);
+    if (!app) return;
+
+    this.gigApplications = this.gigApplications.map((a) =>
+      a.id === applicationId ? { ...a, status: "REJECTED" as const } : a
+    );
+
+    const gig = this.gigs.find((g) => g.id === app.gigId);
+
+    this.dispatchNotification({
+      title: "Application Update",
+      message: `Your application for "${gig?.title}" was not selected. Check other open gigs!`,
+      type: "GIG",
+      link: "/gigs",
+    });
+
+    this.notify();
+  }
+
+  submitGigWork(params: {
+    gigId: string;
+    studentId: string;
+    studentName: string;
+    notes: string;
+    filesOrLinks: { title: string; url: string }[];
+  }) {
+    const newSubmission: GigSubmission = {
+      id: `sub-${Date.now()}`,
+      gigId: params.gigId,
+      studentId: params.studentId,
+      studentName: params.studentName,
+      notes: params.notes,
+      filesOrLinks: params.filesOrLinks,
+      submittedAt: new Date().toISOString(),
+      status: "SUBMITTED",
+    };
+
+    // Remove any previous submission and prepend new
+    this.gigSubmissions = [newSubmission, ...this.gigSubmissions.filter((s) => s.gigId !== params.gigId)];
+
+    this.gigs = this.gigs.map((g) =>
+      g.id === params.gigId ? { ...g, status: "SUBMITTED" as const } : g
+    );
+
+    const gig = this.gigs.find((g) => g.id === params.gigId);
+
+    this.dispatchNotification({
+      title: "Work Submitted for Review",
+      message: `${params.studentName} has delivered completed deliverables for "${gig?.title}".`,
+      type: "GIG",
+      link: "/gigs/my-gigs",
+    });
+
+    this.notify();
+  }
+
+  reviewSubmission(params: {
+    submissionId: string;
+    decision: "APPROVED" | "REVISION_REQUESTED" | "REJECTED";
+    revisionNote?: string;
+  }) {
+    const sub = this.gigSubmissions.find((s) => s.id === params.submissionId);
+    if (!sub) return;
+
+    this.gigSubmissions = this.gigSubmissions.map((s) =>
+      s.id === params.submissionId
+        ? {
+            ...s,
+            status: params.decision,
+            revisionNote: params.revisionNote,
+            reviewedAt: new Date().toISOString(),
+          }
+        : s
+    );
+
+    const gig = this.gigs.find((g) => g.id === sub.gigId);
+
+    if (params.decision === "APPROVED") {
+      this.gigs = this.gigs.map((g) =>
+        g.id === sub.gigId ? { ...g, status: "COMPLETED" as const } : g
+      );
+
+      // Record reward transaction
+      const newTx: GigTransaction = {
+        id: `tx-gig-${Date.now()}`,
+        gigId: sub.gigId,
+        gigTitle: gig?.title || "Campus Gig",
+        studentId: sub.studentId,
+        studentName: sub.studentName,
+        rewardType: gig?.rewardType || "CASH",
+        amount: gig?.rewardAmount,
+        rewardDescription: gig?.rewardDescription || "Gig Completion Reward",
+        status: gig?.rewardType === "CASH" ? "PAID" : "RECEIVED",
+        posterConfirmed: true,
+        studentConfirmed: gig?.rewardType !== "CASH",
+        transactionRef: `UPI-CAMPUS-${Math.floor(100000 + Math.random() * 900000)}`,
+        date: new Date().toISOString().split("T")[0],
+      };
+      this.gigTransactions = [newTx, ...this.gigTransactions];
+
+      this.dispatchNotification({
+        title: "Work Approved & Reward Dispatched! 🎉",
+        message: `Your work for "${gig?.title}" was accepted. Reward: ${gig?.rewardDescription}`,
+        type: "GIG",
+        link: "/gigs/wallet",
+      });
+    } else if (params.decision === "REVISION_REQUESTED") {
+      this.gigs = this.gigs.map((g) =>
+        g.id === sub.gigId ? { ...g, status: "IN_PROGRESS" as const } : g
+      );
+
+      this.dispatchNotification({
+        title: "Revision Requested on Deliverable",
+        message: `Task: "${gig?.title}". Feedback: ${params.revisionNote || "Please review deliverables."}`,
+        type: "GIG",
+        link: "/gigs/my-gigs",
+      });
+    }
+
+    this.notify();
+  }
+
+  confirmPosterPayment(transactionId: string) {
+    this.gigTransactions = this.gigTransactions.map((t) =>
+      t.id === transactionId ? { ...t, posterConfirmed: true, status: "PAID" as const } : t
+    );
+    const tx = this.gigTransactions.find((t) => t.id === transactionId);
+
+    this.dispatchNotification({
+      title: "Reward Payment Initiated",
+      message: `Poster confirmed payment for "${tx?.gigTitle}". Please confirm receipt in your wallet.`,
+      type: "GIG",
+      link: "/gigs/wallet",
+    });
+
+    this.notify();
+  }
+
+  confirmStudentReceipt(transactionId: string) {
+    this.gigTransactions = this.gigTransactions.map((t) =>
+      t.id === transactionId ? { ...t, studentConfirmed: true, status: "RECEIVED" as const } : t
+    );
+    const tx = this.gigTransactions.find((t) => t.id === transactionId);
+
+    this.dispatchNotification({
+      title: "Payment Settled & Confirmed",
+      message: `Student confirmed receipt of reward for "${tx?.gigTitle}". Task transaction closed.`,
+      type: "GIG",
+      link: "/gigs/wallet",
+    });
+
+    this.notify();
+  }
+
+  rateGig(params: {
+    gigId: string;
+    fromUserId: string;
+    fromName: string;
+    toUserId: string;
+    toName: string;
+    role: "POSTER" | "STUDENT";
+    stars: number;
+    comment: string;
+  }) {
+    const newRating: GigRating = {
+      id: `rate-${Date.now()}`,
+      ...params,
+      createdAt: new Date().toISOString(),
+    };
+    this.gigRatings = [newRating, ...this.gigRatings];
+
+    this.dispatchNotification({
+      title: "New Rating & Review Received ⭐",
+      message: `${params.fromName} rated you ${params.stars}/5 stars: "${params.comment.slice(0, 40)}..."`,
+      type: "GIG",
+      link: "/gigs",
+    });
+
+    this.notify();
+  }
+
+  reportGig(params: {
+    gigId: string;
+    reportedById: string;
+    reportedByName: string;
+    reason: string;
+    details: string;
+  }) {
+    const gig = this.gigs.find((g) => g.id === params.gigId);
+    const newReport: GigReport = {
+      id: `rep-${Date.now()}`,
+      gigId: params.gigId,
+      gigTitle: gig?.title || "Campus Gig",
+      reportedById: params.reportedById,
+      reportedByName: params.reportedByName,
+      reason: params.reason,
+      details: params.details,
+      status: "PENDING",
+      createdAt: new Date().toISOString(),
+    };
+    this.gigReports = [newReport, ...this.gigReports];
+
+    this.dispatchNotification({
+      title: "Flagged Gig Alert",
+      message: `Report filed on "${gig?.title}": ${params.reason}`,
+      type: "GIG",
+      link: "/gigs/admin",
+    });
+
+    this.notify();
+  }
+
+  resolveReport(reportId: string, action: "DISMISS" | "TAKE_DOWN") {
+    const rep = this.gigReports.find((r) => r.id === reportId);
+    if (!rep) return;
+
+    this.gigReports = this.gigReports.map((r) =>
+      r.id === reportId ? { ...r, status: action === "DISMISS" ? "DISMISSED" : "RESOLVED" } : r
+    );
+
+    if (action === "TAKE_DOWN") {
+      this.gigs = this.gigs.map((g) =>
+        g.id === rep.gigId ? { ...g, status: "CANCELLED" as const, rejectionReason: "Removed by Admin Moderation" } : g
+      );
+    }
 
     this.notify();
   }

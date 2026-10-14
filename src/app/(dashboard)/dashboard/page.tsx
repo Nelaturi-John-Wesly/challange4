@@ -9,16 +9,21 @@ import {
   AlertTriangle,
   Award,
   BookOpen,
+  Briefcase,
   Calendar,
   CheckCircle2,
   Clock,
+  Coins,
   CreditCard,
   FileText,
   GraduationCap,
   IdCard,
+  MapPin,
   Plus,
+  Sparkles,
   Users,
 } from "lucide-react";
+import { INITIAL_CAMPUS_GIGS } from "@/lib/gigs";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
@@ -115,8 +120,58 @@ export default async function DashboardPage() {
         course: true,
         faculty: { include: { user: true } },
       },
-      orderBy: { startTime: "asc" },
     });
+
+    // 6. Campus Gigs: Latest 3 Open Opportunities
+    let latestGigs: any[] = [];
+    try {
+      const dbGigs = await prisma.campusGig.findMany({
+        where: { status: "OPEN" },
+        take: 3,
+        orderBy: { createdAt: "desc" },
+      });
+      if (dbGigs.length > 0) {
+        latestGigs = dbGigs.map((g) => ({
+          id: g.id,
+          title: g.title,
+          category: g.category.replace("_", " "),
+          posterName: g.posterName,
+          posterDept: g.posterDepartment,
+          posterRole: g.posterRole,
+          posterVerified: g.posterVerified,
+          rewardType: g.rewardType,
+          rewardAmount: g.rewardAmount,
+          rewardDescription: g.rewardDescription,
+          estimatedHours: g.estimatedHours,
+          location: g.location === "REMOTE" ? "Remote" : "On-campus",
+          slotsLeft: Math.max(0, g.numberOfSlots - g.slotsFilled),
+          skills: g.requiredSkills.split(",").map((s) => s.trim()),
+        }));
+      }
+    } catch {
+      latestGigs = [];
+    }
+
+    if (latestGigs.length === 0) {
+      latestGigs = INITIAL_CAMPUS_GIGS.filter((g) => g.status === "OPEN")
+        .slice(0, 3)
+        .map((g) => ({
+          id: g.id,
+          title: g.title,
+          category: g.category,
+          posterName: g.postedBy.name,
+          posterDept: g.postedBy.department,
+          posterRole: g.postedBy.role,
+          posterVerified: g.postedBy.verified,
+          rewardType: g.rewardType,
+          rewardAmount: g.rewardAmount,
+          rewardDescription: g.rewardDescription,
+          estimatedHours: g.estimatedHours,
+          location: g.location,
+          slotsLeft: Math.max(0, g.numberOfSlots - g.slotsFilled),
+          skills: g.requiredSkills,
+        }));
+    }
 
     return (
       <div className="space-y-8 text-left">
@@ -325,6 +380,93 @@ export default async function DashboardPage() {
                 </div>
               </Card>
             )}
+          </div>
+        </div>
+
+        {/* Campus Gigs: "Gigs for you" widget */}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="p-2 rounded-xl bg-gradient-to-br from-amber-500/20 to-orange-500/10 text-amber-500 border border-amber-500/30">
+                <Briefcase className="w-5 h-5" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">
+                    Gigs for you
+                  </h3>
+                  <Badge variant="warning" className="text-[10px] tracking-wider uppercase">
+                    Earn & Learn
+                  </Badge>
+                </div>
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  Student part-time opportunities, research help, and campus tasks
+                </p>
+              </div>
+            </div>
+            <Link
+              href="/gigs"
+              className="text-xs font-semibold text-amber-500 hover:text-amber-400 hover:underline flex items-center gap-1 group"
+            >
+              View all gigs
+              <span className="group-hover:translate-x-0.5 transition-transform">→</span>
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {latestGigs.map((gig) => (
+              <Card
+                key={gig.id}
+                className="group relative overflow-hidden p-5 flex flex-col justify-between hover:border-amber-500/50 hover:shadow-lg hover:shadow-amber-500/5 transition-all duration-300 bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800"
+              >
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+                      {gig.category}
+                    </span>
+                    <Badge variant={gig.rewardType === "CASH" ? "success" : "info"} className="text-[10px]">
+                      {gig.rewardType === "CASH" ? `₹${gig.rewardAmount}` : gig.rewardType.replace("_", " ")}
+                    </Badge>
+                  </div>
+
+                  <div>
+                    <h4 className="font-bold text-sm text-slate-900 dark:text-slate-100 group-hover:text-amber-500 transition-colors line-clamp-2">
+                      {gig.title}
+                    </h4>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 flex items-center gap-1">
+                      <span>By <b>{gig.posterName}</b></span>
+                      {gig.posterVerified && (
+                        <span className="text-amber-500 text-[10px]" title="Verified Poster">✓</span>
+                      )}
+                      <span>· {gig.posterDept}</span>
+                    </p>
+                  </div>
+
+                  <div className="flex flex-wrap gap-1">
+                    {gig.skills.slice(0, 3).map((skill: string, idx: number) => (
+                      <span
+                        key={idx}
+                        className="text-[10px] px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800/80 text-slate-600 dark:text-slate-400"
+                      >
+                        {skill}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="pt-4 mt-4 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between text-xs">
+                  <span className="text-slate-500 dark:text-slate-400 text-[11px] flex items-center gap-1">
+                    <Clock className="w-3.5 h-3.5 text-amber-500" />
+                    {gig.estimatedHours}h · {gig.slotsLeft} slot{gig.slotsLeft !== 1 ? "s" : ""} left
+                  </span>
+                  <Link href={`/gigs/${gig.id}`}>
+                    <Button size="sm" variant="outline" className="text-xs h-7 px-3 group-hover:border-amber-500/40">
+                      Apply →
+                    </Button>
+                  </Link>
+                </div>
+              </Card>
+            ))}
           </div>
         </div>
       </div>

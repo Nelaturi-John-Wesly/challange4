@@ -32,6 +32,7 @@ export const authOptions: AuthOptions = {
           "admin@college.edu": { name: "Dr. S. Prakash", role: "ADMIN", pass: "Admin@123", dept: "ADMIN" },
           "alumni@college.edu": { name: "Vikramaditya Rao", role: "ALUMNI", pass: "Alumni@123", dept: "CSE" },
           "club@college.edu": { name: "Priya Sharma", role: "CLUB_LEAD", pass: "Club@123", dept: "ECE" },
+          "faculty@college.edu": { name: "Prof. Sana Iqbal", role: "FACULTY", pass: "Faculty@123", dept: "CSE" },
           "canteen@college.edu": { name: "Chef Ramesh", role: "CAFETERIA_STAFF", pass: "Staff@123", dept: "CANTEEN" },
         };
 
