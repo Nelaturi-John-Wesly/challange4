@@ -1,7 +1,7 @@
 # College Website & Campus Life Platform — Deployment & Project Summary
 
 > **Status:** Successfully Deployed to Vercel (Production)  
-> **Working Tree:** Clean (`git` commit: `48733cd`)  
+> **Working Tree:** Clean (`git` commit: `44ddd0c`)  
 > **Local Path:** `c:\Users\johnf\college-platform`
 
 ---
@@ -11,7 +11,7 @@
 | Property | Value / Link |
 | :--- | :--- |
 | **Primary Production URL** | [https://college-platform-eosin.vercel.app](https://college-platform-eosin.vercel.app) |
-| **Direct Deployment URL** | [https://college-platform-nl3yoor54-johnff340-4816.vercel.app](https://college-platform-nl3yoor54-johnff340-4816.vercel.app) |
+| **Direct Deployment URL** | [https://college-platform-gu8vdr3am-johnff340-4816.vercel.app](https://college-platform-gu8vdr3am-johnff340-4816.vercel.app) |
 | **Hosting Platform** | Vercel (Production Edge, Node.js 24 runtime) |
 | **Deployment Mode** | Standard Public Web App (No tunnels or live dev servers needed) |
 
