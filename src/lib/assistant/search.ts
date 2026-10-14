@@ -1,5 +1,4 @@
 import { prisma } from "@/lib/prisma";
-import { globalStore } from "@/lib/store";
 
 export interface SearchResultItem {
   id: string;
@@ -170,23 +169,29 @@ export async function executeGlobalSearch(query: string): Promise<GroupedSearchR
   }
 
   // 4. Campus Gigs
-  const gigItems: SearchResultItem[] = globalStore.gigs
-    .filter(
-      (g) =>
-        matchesText(g.title) ||
-        matchesText(g.description) ||
-        (Array.isArray(g.requiredSkills)
-          ? g.requiredSkills.some((s: string) => matchesText(s))
-          : Boolean(g.requiredSkills && matchesText(String(g.requiredSkills))))
-    )
-    .map((g) => ({
-      id: g.id,
-      title: g.title,
-      description: g.description.slice(0, 120) + "...",
-      category: "Campus Gigs",
-      url: `/gigs/${g.id}`,
-      badge: g.rewardAmount ? `₹${g.rewardAmount}` : g.category,
-    }));
+  let gigItems: SearchResultItem[] = [];
+  try {
+    const gigs = await prisma.campusGig.findMany({
+      take: 20,
+    });
+    gigItems = gigs
+      .filter(
+        (g) =>
+          matchesText(g.title) ||
+          matchesText(g.description) ||
+          Boolean(g.requiredSkills && matchesText(g.requiredSkills))
+      )
+      .map((g) => ({
+        id: g.id,
+        title: g.title,
+        description: g.description.slice(0, 120) + "...",
+        category: "Campus Gigs",
+        url: `/gigs/${g.id}`,
+        badge: g.rewardAmount ? `₹${g.rewardAmount}` : "Gig",
+      }));
+  } catch (err) {
+    console.warn("Campus Gig search error:", err);
+  }
 
   // 5. Courses
   let courseItems: SearchResultItem[] = [];

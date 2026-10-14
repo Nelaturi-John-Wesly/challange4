@@ -1,5 +1,4 @@
 import { prisma } from "@/lib/prisma";
-import { globalStore } from "@/lib/store";
 import { executeGlobalSearch } from "./search";
 import {
   AssistantContext,
