@@ -11,7 +11,8 @@
 | Property | Value / Link |
 | :--- | :--- |
 | **Primary Production URL** | [https://college-platform-eosin.vercel.app](https://college-platform-eosin.vercel.app) |
-| **Direct Deployment URL** | [https://college-platform-g2687bpa1-johnff340-4816.vercel.app](https://college-platform-g2687bpa1-johnff340-4816.vercel.app) |
+| **1-2 Min Demo Video Presentation** | [https://college-platform-eosin.vercel.app/demo-presentation.html](https://college-platform-eosin.vercel.app/demo-presentation.html) |
+| **Direct Deployment URL** | [https://college-platform-mljmbnp8h-johnff340-4816.vercel.app](https://college-platform-mljmbnp8h-johnff340-4816.vercel.app) |
 | **GitHub Repository (Public)** | [https://github.com/Nelaturi-John-Wesly/challange4](https://github.com/Nelaturi-John-Wesly/challange4) |
 | **Hosting Platform** | Vercel (Production Edge, Node.js 24 runtime) |
 | **Deployment Mode** | Standard Public Web App (No tunnels or live dev servers needed) |
@@ -59,6 +60,14 @@ All routes are fully implemented, populated with realistic sample data, and styl
 - **`/gigs`** (*Futuristic Electric Amber / Gold `#f59e0b` & Indigo*): Campus Part-Time Work Marketplace with anti-scam escrow, study-work limits (15h/week, 3 tasks max), role-based posting, student application tracker, two-way settlement, and digital completion certificates.
 - **`/grievances`** (*Steel Blue `#3b82f6`*): Support ticket creation, multi-step vertical progression timeline, and resolution tracker.
 - **`/admin`** (*Crimson Authority `#dc2626`*): Institutional analytics, emergency alert broadcaster, and live audit feed.
+
+### 3. Campus AI (AETHER) Multimodal Layer
+- **Floating AI Orb**: Voice & text assistant floating button visible across all pages.
+- **Multilingual Web Speech STT/TTS**: Real-time voice commands in English (`en-IN`), Telugu (`te-IN`), and Hindi (`hi-IN`).
+- **16 Allowlisted Security Tools**: Role-based access control, strict prompt injection sanitization, rate limiting, and two-phase transactional confirmations (`apply_gig`, `join_club`, `order_cafeteria`, `register_event`, etc.).
+- **Global Command Palette**: Instant modal search with <kbd>Ctrl+K</kbd> / <kbd>Cmd+K</kbd>.
+- **Smart Attendance Recovery Insights**: Dynamic dashboard card computing exact classes to attend for subjects under the mandatory 75% threshold.
+- **Interactive 1-2 Min Video Presentation Player**: Hosted at `/demo-presentation.html` featuring synchronized live speech narration, timeline scrubber, animated audio waveforms, and realistic UI mockups.
 
 ---
 
