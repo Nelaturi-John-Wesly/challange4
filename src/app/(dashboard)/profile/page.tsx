@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useToast } from "@/components/shared/Toast";
+import { useAssistant } from "@/components/assistant/AssistantContext";
 import {
   Camera,
   Trash2,
@@ -34,6 +35,11 @@ import {
   Building2,
   Tag,
   FileText,
+  Bot,
+  Volume2,
+  Globe,
+  Mic,
+  RotateCcw,
 } from "lucide-react";
 
 function GithubIcon({ className = "w-4 h-4" }: { className?: string }) {
@@ -55,6 +61,17 @@ function LinkedinIcon({ className = "w-4 h-4" }: { className?: string }) {
 export default function ProfilePage() {
   const { data: session, update: updateSession } = useSession();
   const { toast } = useToast();
+  const {
+    language: aiLanguage,
+    setLanguage: setAiLanguage,
+    voiceRepliesEnabled,
+    setVoiceRepliesEnabled,
+    handsFree,
+    setHandsFree,
+    aiEnabled,
+    setAiEnabled,
+    clearHistory,
+  } = useAssistant();
 
   const [activeTab, setActiveTab] = useState<"overview" | "edit" | "settings" | "college">("overview");
   const [profile, setProfile] = useState<any>(null);
@@ -1393,6 +1410,135 @@ export default function ProfilePage() {
                   Save Preferences & Privacy
                 </Button>
               </div>
+            </Card>
+
+            {/* Campus AI (AETHER) Settings Card */}
+            <Card className="p-6 bg-slate-900 border-slate-800 space-y-5">
+              <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+                <div className="flex items-center gap-2.5">
+                  <div className="p-1.5 rounded-lg bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
+                    <Bot className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-white flex items-center gap-1.5">
+                      <span>Campus AI (AETHER)</span>
+                      <span className="px-1.5 py-0.2 rounded text-[9px] bg-cyan-500/20 text-cyan-300 font-mono">v2.4</span>
+                    </h3>
+                    <p className="text-[11px] text-slate-400">Voice navigation, search, and intelligent assistant settings</p>
+                  </div>
+                </div>
+
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={aiEnabled}
+                    onChange={(e) => {
+                      setAiEnabled(e.target.checked);
+                      toast({
+                        title: e.target.checked ? "Campus AI Enabled" : "Campus AI Disabled",
+                        description: e.target.checked ? "Assistant orb and shortcuts are active." : "AI assistant features and floating orb are disabled.",
+                        variant: e.target.checked ? "success" : "info",
+                      });
+                    }}
+                    className="sr-only peer"
+                  />
+                  <div className="w-10 h-5 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-cyan-500"></div>
+                </label>
+              </div>
+
+              {aiEnabled ? (
+                <div className="space-y-3.5 text-xs">
+                  {/* Language Selector */}
+                  <div className="p-3 rounded-xl bg-slate-950 border border-slate-800 space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <span className="font-semibold text-slate-200 flex items-center gap-1.5">
+                        <Globe className="w-3.5 h-3.5 text-cyan-400" />
+                        Assistant Language
+                      </span>
+                      <span className="text-[10px] text-slate-400">Understands & speaks in</span>
+                    </div>
+                    <select
+                      value={aiLanguage}
+                      onChange={(e) => {
+                        setAiLanguage(e.target.value as any);
+                        toast({ title: "Language Updated", description: `Assistant set to ${e.target.value}`, variant: "success" });
+                      }}
+                      className="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-white text-xs cursor-pointer focus:border-cyan-500"
+                    >
+                      <option value="en-IN">English (India) · en-IN</option>
+                      <option value="te-IN">తెలుగు (Telugu) · te-IN</option>
+                      <option value="hi-IN">हिंदी (Hindi) · hi-IN</option>
+                    </select>
+                  </div>
+
+                  {/* Voice Replies Toggle */}
+                  <div className="flex items-center justify-between p-3 rounded-xl bg-slate-950 border border-slate-800">
+                    <div className="flex items-center gap-2">
+                      <Volume2 className="w-3.5 h-3.5 text-indigo-400" />
+                      <div>
+                        <span className="font-semibold text-slate-200">Text-to-Speech Replies</span>
+                        <p className="text-[11px] text-slate-500">Speak responses aloud using Web Speech</p>
+                      </div>
+                    </div>
+                    <input
+                      type="checkbox"
+                      checked={voiceRepliesEnabled}
+                      onChange={(e) => setVoiceRepliesEnabled(e.target.checked)}
+                      className="accent-cyan-500 cursor-pointer w-4 h-4"
+                    />
+                  </div>
+
+                  {/* Hands-Free Mode Toggle */}
+                  <div className="flex items-center justify-between p-3 rounded-xl bg-slate-950 border border-slate-800">
+                    <div className="flex items-center gap-2">
+                      <Mic className="w-3.5 h-3.5 text-amber-400" />
+                      <div>
+                        <span className="font-semibold text-slate-200">Hands-Free Continuous Mode</span>
+                        <p className="text-[11px] text-slate-500">Keep listening automatically between turns</p>
+                      </div>
+                    </div>
+                    <input
+                      type="checkbox"
+                      checked={handsFree}
+                      onChange={(e) => setHandsFree(e.target.checked)}
+                      className="accent-cyan-500 cursor-pointer w-4 h-4"
+                    />
+                  </div>
+
+                  {/* Clear History Button */}
+                  <div className="flex items-center justify-between p-3 rounded-xl bg-slate-950 border border-slate-800">
+                    <div>
+                      <span className="font-semibold text-slate-200">Conversation Session History</span>
+                      <p className="text-[11px] text-slate-500">Reset assistant memory and cached cards</p>
+                    </div>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        clearHistory();
+                        toast({ title: "History Cleared", description: "Assistant session context has been reset.", variant: "info" });
+                      }}
+                      className="text-xs border-slate-700 hover:border-rose-500 hover:text-rose-400 flex items-center gap-1.5"
+                    >
+                      <RotateCcw className="w-3 h-3" />
+                      Clear
+                    </Button>
+                  </div>
+
+                  {/* Security & Privacy Notice */}
+                  <div className="p-3 rounded-xl bg-cyan-950/20 border border-cyan-800/30 text-[11px] text-cyan-200/80 leading-relaxed">
+                    <p className="flex items-center gap-1.5 font-semibold text-cyan-300 mb-0.5">
+                      <Shield className="w-3.5 h-3.5" /> Privacy & Allowlist Guarantee
+                    </p>
+                    Audio is never recorded or stored on remote servers. All queries execute through server-side allowlisted tools bound to your session identity.
+                  </div>
+                </div>
+              ) : (
+                <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 text-center text-xs text-slate-400 space-y-1">
+                  <p className="font-semibold text-slate-300">Campus AI is currently turned off</p>
+                  <p className="text-[11px] text-slate-500">Toggle the switch above to re-enable voice search, shortcut keys, and intelligent actions.</p>
+                </div>
+              )}
             </Card>
           </div>
         </div>

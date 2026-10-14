@@ -921,3 +921,17 @@ model GigReport {
   createdAt      DateTime  @default(now())
 }
 
+model AssistantAuditLog {
+  id          String   @id @default(cuid())
+  userId      String?
+  userEmail   String?
+  role        String?
+  action      String
+  toolName    String?
+  inputQuery  String
+  success     Boolean  @default(true)
+  details     String?
+  executionMs Int      @default(0)
+  createdAt   DateTime @default(now())
+}
+

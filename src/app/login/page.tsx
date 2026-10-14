@@ -28,8 +28,10 @@ import {
   UserCheck,
   UserPlus,
   Users,
+  Sparkles,
 } from "lucide-react";
 import { CollegeLogo } from "@/components/shared/CollegeLogo";
+import { DemoSection } from "@/components/demo/DemoSection";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
@@ -460,56 +462,9 @@ export default function LoginPage() {
         <ThemeToggle />
       </div>
 
-      {/* Main Container */}
+      {/* Main Login / Register Container (Form First Above The Fold) */}
       <div className="max-w-5xl w-full mx-auto my-6 grid lg:grid-cols-12 gap-8 items-start">
-        {/* Left Information Hero */}
-        <div className="lg:col-span-5 space-y-5 text-left pt-2">
-          <Badge
-            variant="outline"
-            className="border-amber-500/40 text-amber-400 bg-amber-500/10 px-3 py-1 font-semibold"
-          >
-            Academic Year 2025–2026
-          </Badge>
-          <h1 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight leading-tight">
-            Institutional Campus ERP & Student Life.
-          </h1>
-          <p className="text-slate-400 text-sm leading-relaxed">
-            Role-isolated access for Students, Campus Club Leads, Cafeteria Staff, Alumni Mentors, and Institutional Administrators.
-          </p>
-
-          {/* Quick Demo Credentials */}
-          <div className="pt-2 space-y-2.5">
-            <div className="flex items-center justify-between">
-              <p className="text-xs font-bold uppercase tracking-wider text-slate-300">
-                ⚡ 1-Click Instant Demo Portals
-              </p>
-              <span className="text-[10px] text-amber-400">Pre-seeded</span>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              {DEMO_ACCOUNTS.map((acc) => (
-                <button
-                  key={acc.email}
-                  type="button"
-                  disabled={isLoginLoading || isRegLoading}
-                  onClick={() => {
-                    setAuthMode("login");
-                    handleQuickLogin(acc.email, acc.password, acc.name);
-                  }}
-                  className={`text-xs p-2.5 rounded-xl border transition-all text-left flex flex-col gap-0.5 hover:scale-[1.02] active:scale-95 cursor-pointer disabled:opacity-50 ${acc.color}`}
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="font-bold">{acc.role}</span>
-                    <span className="text-[10px] opacity-75">{acc.badge}</span>
-                  </div>
-                  <span className="text-[11px] text-slate-300 truncate">{acc.name}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Right Form Box */}
+        {/* Left: Main Login & Register Form (First thing user sees) */}
         <div className="lg:col-span-7">
           <Card className="p-6 sm:p-8 bg-slate-900/90 border-slate-800 shadow-2xl backdrop-blur-md">
             {/* Tabs */}
@@ -1028,11 +983,80 @@ export default function LoginPage() {
             )}
           </Card>
         </div>
+
+        {/* Right: Institutional Branding Panel (Beside form on desktop) */}
+        <div className="lg:col-span-5 space-y-5 text-left pt-2">
+          <Badge
+            variant="outline"
+            className="border-amber-500/40 text-amber-400 bg-amber-500/10 px-3 py-1 font-semibold"
+          >
+            Academic Year 2025–2026
+          </Badge>
+          <h1 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight leading-tight">
+            Institutional Campus ERP &amp; Student Life.
+          </h1>
+          <p className="text-slate-400 text-sm leading-relaxed">
+            Unified institutional portal balancing administrative utilities with co-curricular student life engagement and AI voice control.
+          </p>
+
+          {/* Feature Highlights List */}
+          <div className="space-y-3 pt-2 text-xs">
+            <div className="p-3 rounded-xl bg-slate-900/80 border border-slate-800 flex items-center gap-3">
+              <div className="w-8 h-8 rounded-lg bg-cyan-500/15 border border-cyan-500/30 text-cyan-400 flex items-center justify-center shrink-0">
+                <Sparkles className="w-4 h-4" />
+              </div>
+              <div>
+                <div className="font-bold text-white">Campus AI Assistant</div>
+                <div className="text-slate-400 text-[11px]">Voice &amp; text control in English, Telugu &amp; Hindi</div>
+              </div>
+            </div>
+
+            <div className="p-3 rounded-xl bg-slate-900/80 border border-slate-800 flex items-center gap-3">
+              <div className="w-8 h-8 rounded-lg bg-amber-500/15 border border-amber-500/30 text-amber-400 flex items-center justify-center shrink-0">
+                <GraduationCap className="w-4 h-4" />
+              </div>
+              <div>
+                <div className="font-bold text-white">Smart Attendance &amp; LMS</div>
+                <div className="text-slate-400 text-[11px]">75% rule tracker &amp; digital exam schedules</div>
+              </div>
+            </div>
+
+            <div className="p-3 rounded-xl bg-slate-900/80 border border-slate-800 flex items-center gap-3">
+              <div className="w-8 h-8 rounded-lg bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 flex items-center justify-center shrink-0">
+                <Briefcase className="w-4 h-4" />
+              </div>
+              <div>
+                <div className="font-bold text-white">Campus Gigs &amp; Placements</div>
+                <div className="text-slate-400 text-[11px]">Part-time academic work-study &amp; career drives</div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
+      {/* Scroll Hint Underneath Form */}
+      <div className="text-center pt-2 pb-6">
+        <a
+          href="#explore-demo"
+          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-slate-900/90 border border-cyan-500/30 hover:border-cyan-400 text-cyan-300 hover:text-white text-xs font-bold hover:scale-105 transition-all cursor-pointer shadow-xl backdrop-blur-md"
+        >
+          <Sparkles className="w-3.5 h-3.5 animate-pulse text-cyan-400" />
+          <span>See Campus AI in action ↓</span>
+        </a>
+      </div>
+
+      {/* ============================================================== */}
+      {/* EXPLORE THE DEMO SECTION (Below the login form) */}
+      {/* ============================================================== */}
+      <DemoSection
+        onQuickLogin={handleQuickLogin}
+        isLoading={isLoginLoading}
+        demoModeEnabled={true}
+      />
+
       {/* Footer */}
-      <div className="max-w-6xl w-full mx-auto text-center text-xs text-slate-400">
-        Institutional Campus ERP & Life Platform · All data encrypted with role-level isolation.
+      <div className="max-w-6xl w-full mx-auto text-center text-xs text-slate-400 pt-8 border-t border-slate-900">
+        Institutional Campus ERP &amp; Life Platform · All data encrypted with role-level isolation.
       </div>
     </div>
   );

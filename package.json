@@ -9,7 +9,7 @@
     "lint": "eslint",
     "seed": "tsx prisma/seed.ts",
     "seed:colleges": "tsx prisma/seed-colleges.ts",
-    "test": "tsx --test tests/phase1.test.ts tests/gigs.test.ts tests/college.test.ts"
+    "test": "tsx --test tests/phase1.test.ts tests/gigs.test.ts tests/college.test.ts tests/assistant.test.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

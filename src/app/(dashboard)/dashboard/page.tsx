@@ -27,6 +27,7 @@ import {
 import { INITIAL_CAMPUS_GIGS } from "@/lib/gigs";
 import { CollegeLogo } from "@/components/shared/CollegeLogo";
 import { CompleteProfilePrompt } from "@/components/profile/CompleteProfilePrompt";
+import { AIInsightsCard } from "@/components/assistant/AIInsightsCard";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
@@ -244,6 +245,9 @@ export default async function DashboardPage() {
             </Link>
           </div>
         </div>
+
+        {/* Real-time Campus AI Insights & Daily Intelligence */}
+        <AIInsightsCard />
 
         {/* Critical Attendance Alert if < 75% in any subject */}
         {atRiskCount > 0 && (

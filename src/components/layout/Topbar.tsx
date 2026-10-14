@@ -5,7 +5,8 @@ import { ThemeToggle } from "@/components/layout/ThemeToggle";
 import { NotificationBell } from "@/components/shared/NotificationBell";
 import { CollegeLogo } from "@/components/shared/CollegeLogo";
 import { Badge } from "@/components/ui/badge";
-import { LogOut, Menu, User as UserIcon, UserCircle } from "lucide-react";
+import { LogOut, Menu, Mic, Search, User as UserIcon, UserCircle } from "lucide-react";
+import { useAssistant } from "@/components/assistant/AssistantContext";
 import { signOut } from "next-auth/react";
 import Link from "next/link";
 import React from "react";
@@ -27,6 +28,7 @@ interface TopbarProps {
 
 export function Topbar({ user }: TopbarProps) {
   const { toggleSidebar } = useSidebar();
+  const { setPaletteOpen, setIsOpen, startListening } = useAssistant();
   const collegeName = user.collegeName || "Narasaraopeta Engineering College";
   const collegeCity = user.collegeCity || "Narasaraopet";
 
@@ -65,8 +67,47 @@ export function Topbar({ user }: TopbarProps) {
         </div>
       </div>
 
+      {/* Center Search Bar with Mic Icon & Command Palette Trigger */}
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          onClick={() => setPaletteOpen(true)}
+          className="hidden md:flex items-center gap-2.5 px-3.5 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/60 text-slate-500 dark:text-slate-400 text-xs hover:border-cyan-500/50 hover:text-slate-900 dark:hover:text-slate-200 transition-all cursor-pointer shadow-xs"
+        >
+          <Search className="w-3.5 h-3.5" />
+          <span>Search or command...</span>
+          <kbd className="px-1.5 py-0.5 rounded bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 font-mono text-[10px]">
+            Ctrl+K
+          </kbd>
+          <span
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsOpen(true);
+              startListening();
+            }}
+            title="Voice Search"
+            className="p-1 rounded-md hover:bg-cyan-500/20 text-cyan-500 hover:text-cyan-400 transition-colors"
+          >
+            <Mic className="w-3.5 h-3.5" />
+          </span>
+        </button>
+      </div>
+
       {/* Right Controls */}
       <div className="flex items-center gap-2 sm:gap-3">
+        {/* Mobile Mic Button */}
+        <button
+          type="button"
+          onClick={() => {
+            setIsOpen(true);
+            startListening();
+          }}
+          title="Campus AI Voice Assistant"
+          className="md:hidden p-2 rounded-xl text-cyan-500 hover:bg-cyan-500/10 cursor-pointer"
+        >
+          <Mic className="w-4 h-4" />
+        </button>
+
         <NotificationBell />
         <ThemeToggle />
 
