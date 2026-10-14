@@ -11,7 +11,7 @@
 | Property | Value / Link |
 | :--- | :--- |
 | **Primary Production URL** | [https://college-platform-eosin.vercel.app](https://college-platform-eosin.vercel.app) |
-| **Direct Deployment URL** | [https://college-platform-gu8vdr3am-johnff340-4816.vercel.app](https://college-platform-gu8vdr3am-johnff340-4816.vercel.app) |
+| **Direct Deployment URL** | [https://college-platform-jbdv7ozd1-johnff340-4816.vercel.app](https://college-platform-jbdv7ozd1-johnff340-4816.vercel.app) |
 | **Hosting Platform** | Vercel (Production Edge, Node.js 24 runtime) |
 | **Deployment Mode** | Standard Public Web App (No tunnels or live dev servers needed) |
 
