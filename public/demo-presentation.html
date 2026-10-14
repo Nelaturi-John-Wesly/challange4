@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CampusConnect & Campus AI (AETHER) — 1-2 Min Video Presentation</title>
+  <style>
+    :root {
+      --bg: #030712;
+      --card-bg: rgba(15, 23, 42, 0.85);
+      --border: rgba(30, 41, 59, 0.8);
+      --cyan: #06b6d4;
+      --cyan-glow: rgba(6, 182, 212, 0.35);
+      --amber: #f59e0b;
+      --indigo: #6366f1;
+      --emerald: #10b981;
+      --rose: #f43f5e;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      overflow-x: hidden;
+    }
+
+    /* Ambient background grid & glow */
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(circle at 50% 20%, rgba(99, 102, 241, 0.12), transparent 50%),
+                  radial-gradient(circle at 80% 80%, rgba(6, 182, 212, 0.1), transparent 45%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .container {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 1080px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    /* Top presentation banner */
+    .header-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 20px;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      backdrop-blur-md;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .orb-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--indigo), var(--cyan));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 15px var(--cyan-glow);
+    }
+
+    .badge-live {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 9999px;
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid rgba(16, 185, 129, 0.4);
+      color: #34d399;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+
+    .live-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #10b981;
+      animation: pulse-dot 1.5s infinite;
+    }
+
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(1.3); }
+    }
+
+    /* Video Player Screen */
+    .player-window {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      background: #090d16;
+      border: 1px solid rgba(6, 182, 212, 0.3);
+      border-radius: 24px;
+      overflow: hidden;
+      box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.8), 0 0 30px rgba(6, 182, 212, 0.15);
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Slide viewport container */
+    .slides-viewport {
+      position: relative;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    .slide {
+      position: absolute;
+      inset: 0;
+      padding: 36px 48px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      opacity: 0;
+      transform: scale(0.97) translateY(15px);
+      transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+      pointer-events: none;
+    }
+
+    .slide.active {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+      pointer-events: auto;
+    }
+
+    .slide-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      border-radius: 8px;
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      width: fit-content;
+    }
+
+    .slide-title {
+      font-size: 28px;
+      font-weight: 900;
+      letter-spacing: -0.5px;
+      color: #fff;
+      margin-top: 8px;
+    }
+
+    .slide-desc {
+      font-size: 14px;
+      color: var(--text-muted);
+      line-height: 1.5;
+      max-width: 600px;
+      margin-top: 6px;
+    }
+
+    .slide-body {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      margin-top: 16px;
+    }
+
+    /* Mock UI card inside slide */
+    .mock-card {
+      flex: 1;
+      background: rgba(15, 23, 42, 0.7);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 16px 20px;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+    }
+
+    .feature-pill-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      flex: 1;
+    }
+
+    .feature-pill {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 14px;
+      border-radius: 12px;
+      background: rgba(30, 41, 59, 0.4);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      font-size: 13px;
+    }
+
+    .feature-pill strong {
+      color: #fff;
+    }
+
+    /* Dynamic Narration Subtitle Box */
+    .subtitles-banner {
+      background: rgba(3, 7, 18, 0.85);
+      border-top: 1px solid var(--border);
+      padding: 14px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      backdrop-blur-md;
+    }
+
+    .narration-text {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+      color: #e2e8f0;
+      line-height: 1.4;
+    }
+
+    .waveform {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      height: 18px;
+    }
+
+    .wave-bar {
+      width: 3px;
+      border-radius: 3px;
+      background: var(--cyan);
+      animation: wave 1s ease-in-out infinite;
+    }
+
+    .wave-bar:nth-child(2) { animation-delay: 0.15s; }
+    .wave-bar:nth-child(3) { animation-delay: 0.3s; }
+    .wave-bar:nth-child(4) { animation-delay: 0.45s; }
+    .wave-bar:nth-child(5) { animation-delay: 0.6s; }
+
+    @keyframes wave {
+      0%, 100% { height: 4px; }
+      50% { height: 18px; }
+    }
+
+    /* Video Player Controls */
+    .controls-bar {
+      background: #020617;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 12px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .progress-track {
+      width: 100%;
+      height: 5px;
+      background: #1e293b;
+      border-radius: 9999px;
+      overflow: hidden;
+      cursor: pointer;
+      position: relative;
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--indigo), var(--cyan));
+      border-radius: 9999px;
+      transition: width 0.2s linear;
+    }
+
+    .control-buttons-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .btn-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .btn {
+      background: rgba(30, 41, 59, 0.6);
+      border: 1px solid var(--border);
+      color: #fff;
+      padding: 7px 14px;
+      border-radius: 10px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn:hover {
+      background: rgba(51, 65, 85, 0.8);
+      border-color: var(--cyan);
+      transform: translateY(-1px);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #0284c7, #06b6d4);
+      border-color: transparent;
+      box-shadow: 0 4px 14px rgba(6, 182, 212, 0.3);
+    }
+
+    .btn-primary:hover {
+      background: linear-gradient(135deg, #0369a1, #0891b2);
+    }
+
+    .timestamp {
+      font-size: 12px;
+      font-family: monospace;
+      color: var(--text-muted);
+    }
+
+    .speed-btn {
+      font-size: 11px;
+      padding: 4px 8px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <!-- Top Bar -->
+    <div class="header-bar">
+      <div class="brand">
+        <div class="orb-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color: #fff;">
+            <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+            <path d="M2 17l10 5 10-5"></path>
+            <path d="M2 12l10 5 10-5"></path>
+          </svg>
+        </div>
+        <div>
+          <h1 style="font-size: 14px; font-weight: 800; color: #fff;">CampusConnect & Campus AI (AETHER)</h1>
+          <p style="font-size: 11px; color: var(--text-muted);">1-2 Min Interactive Presentation & Live Feature Tour</p>
+        </div>
+      </div>
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <span class="badge-live"><span class="live-dot"></span> LIVE DEMO ON VERCEL</span>
+        <a href="https://college-platform-eosin.vercel.app/login" target="_blank" class="btn btn-primary" style="text-decoration: none; font-size: 11px;">
+          Open Live Portal ↗
+        </a>
+      </div>
+    </div>
+
+    <!-- Main Video Frame -->
+    <div class="player-window" id="playerWindow">
+      <div class="slides-viewport">
+
+        <!-- SLIDE 1: 0:00 - 0:22 -->
+        <div class="slide active" id="slide-0">
+          <div>
+            <span class="slide-badge" style="background: rgba(99, 102, 241, 0.15); color: #818cf8; border: 1px solid rgba(99, 102, 241, 0.3);">
+              SCENE 1 · 0:00 - 0:22
+            </span>
+            <h2 class="slide-title">Redesigned Login Page & Above-the-Fold Priority</h2>
+            <p class="slide-desc">The authentication form is prioritized first above the fold, featuring quick OTP tabs, credential remembrance, and a smooth scroll cue to the demo section.</p>
+          </div>
+
+          <div class="slide-body">
+            <div class="mock-card">
+              <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); padding-bottom: 8px; margin-bottom: 12px;">
+                <span style="font-size: 11px; font-weight: 700; color: var(--cyan);">CAMPUS ERP SIGN IN</span>
+                <span style="font-size: 10px; color: var(--text-muted);">Above the Fold</span>
+              </div>
+              <p style="font-size: 12px; color: #e2e8f0; margin-bottom: 8px;"><strong>Institutional Login Card:</strong></p>
+              <ul style="font-size: 11px; color: var(--text-muted); list-style: disc; margin-left: 18px; line-height: 1.6;">
+                <li>Login Form is rendered first without demo blockers</li>
+                <li>Email & Password inputs with show/hide eye toggle</li>
+                <li>One-touch toggle to Email OTP Registration tab</li>
+                <li>Smooth indicator button: <em>"See Campus AI in action ↓"</em></li>
+              </ul>
+            </div>
+
+            <div class="feature-pill-list">
+              <div class="feature-pill">
+                <span style="color: var(--amber); font-size: 16px;">🔑</span>
+                <div><strong>Standard Credentials:</strong> Student, Faculty & Admin role logins</div>
+              </div>
+              <div class="feature-pill">
+                <span style="color: var(--cyan); font-size: 16px;">⚡</span>
+                <div><strong>Zero Lag:</strong> Pre-rendered static shell with instant client hydration</div>
+              </div>
+              <div class="feature-pill">
+                <span style="color: var(--indigo); font-size: 16px;">🎨</span>
+                <div><strong>Futuristic Theme:</strong> Dark glassmorphism with college emblem seal</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SLIDE 2: 0:22 - 0:44 -->
+        <div class="slide" id="slide-1">
+          <div>
+            <span class="slide-badge" style="background: rgba(6, 182, 212, 0.15); color: #22d3ee; border: 1px solid rgba(6, 182, 212, 0.3);">
+              SCENE 2 · 0:22 - 0:44
+            </span>
+            <h2 class="slide-title">Explore the Demo & Sandbox AI Assistant</h2>
+            <p class="slide-desc">Visitors can test the voice assistant in sandbox mode without login, explore 1-click persona accounts, and view platform highlights.</p>
+          </div>
+
+          <div class="slide-body">
+            <div class="mock-card">
+              <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); padding-bottom: 8px; margin-bottom: 12px;">
+                <span style="font-size: 11px; font-weight: 700; color: var(--amber);">SANDBOX AI PREVIEW</span>
+                <span style="font-size: 10px; background: rgba(6, 182, 212, 0.2); color: var(--cyan); padding: 2px 6px; border-radius: 4px;">MOCK DATA</span>
+              </div>
+              <div style="background: #020617; border-radius: 8px; padding: 10px; border: 1px solid #1e293b; margin-bottom: 10px;">
+                <div style="font-size: 11px; color: var(--cyan);">You asked: "Where is the library?"</div>
+                <div style="font-size: 12px; color: #fff; margin-top: 4px;">📍 Central Library is located at Academic Block B, 2nd & 3rd Floors. Skywalk access from Block A.</div>
+              </div>
+              <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                <span style="font-size: 10px; background: #1e293b; padding: 3px 8px; border-radius: 12px; color: #cbd5e1;">Open my attendance</span>
+                <span style="font-size: 10px; background: #1e293b; padding: 3px 8px; border-radius: 12px; color: #cbd5e1;">Find hackathons</span>
+                <span style="font-size: 10px; background: #1e293b; padding: 3px 8px; border-radius: 12px; color: #cbd5e1;">Explain deadlock</span>
+              </div>
+            </div>
+
+            <div class="feature-pill-list">
+              <div class="feature-pill">
+                <span style="color: var(--cyan); font-size: 16px;">👤</span>
+                <div><strong>3 Demo Roles:</strong> 1-Click Login as Demo Student, Faculty, or Admin</div>
+              </div>
+              <div class="feature-pill">
+                <span style="color: var(--emerald); font-size: 16px;">📋</span>
+                <div><strong>Copy Credentials Box:</strong> Single-click clipboard credential copy</div>
+              </div>
+              <div class="feature-pill">
+                <span style="color: var(--rose); font-size: 16px;">🛡️</span>
+                <div><strong>Zero Writes:</strong> Public rate-limited sandbox endpoint prevents DB abuse</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SLIDE 3: 0:44 - 1:06 -->
+        <div class="slide" id="slide-2">
+          <div>
+            <span class="slide-badge" style="background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3);">
+              SCENE 3 · 0:44 - 1:06
+            </span>
+            <h2 class="slide-title">Dashboard Intelligence & Attendance Recovery Catch-up</h2>
+            <p class="slide-desc">The dashboard features an AI Insights Card that alerts students on attendance risks with exact formulas to reach the mandatory 75% threshold.</p>
+          </div>
+
+          <div class="slide-body">
+            <div class="mock-card" style="border-color: rgba(245, 158, 11, 0.4);">
+              <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); padding-bottom: 8px; margin-bottom: 12px;">
+                <span style="font-size: 11px; font-weight: 700; color: var(--amber);">AI INSIGHTS & BRIEFING</span>
+                <span style="font-size: 10px; background: rgba(244, 63, 94, 0.2); color: var(--rose); padding: 2px 6px; border-radius: 4px;">CRITICAL ALERT</span>
+              </div>
+              <div style="background: rgba(244, 63, 94, 0.08); border-left: 3px solid var(--rose); padding: 8px 12px; border-radius: 6px; margin-bottom: 10px;">
+                <div style="font-size: 11px; font-weight: 700; color: #fda4af;">Computer Networks: 72% (&lt; 75%)</div>
+                <div style="font-size: 11px; color: #cbd5e1; margin-top: 2px;">Catch-up needed: Attend <strong>3 more consecutive lectures</strong> to safely reach 75%.</div>
+              </div>
+              <div style="font-size: 11px; color: var(--text-muted);">
+                📅 Next Class: Database Management Systems (DBMS) · 09:00 AM · Room 302
+              </div>
+            </div>
+
+            <div class="feature-pill-list">
+              <div class="feature-pill">
+                <span style="color: var(--amber); font-size: 16px;">📈</span>
+                <div><strong>Automated Formula:</strong> <code>x ≥ 3·total - 4·attended</code> catch-up calculation</div>
+              </div>
+              <div class="feature-pill">
+                <span style="color: var(--indigo); font-size: 16px;">💼</span>
+                <div><strong>Matched Campus Gigs:</strong> Recommends academic freelance gigs based on skills</div>
+              </div>
+              <div class="feature-pill">
+                <span style="color: var(--cyan); font-size: 16px;">🚀</span>
+                <div><strong>Hackathon Feeds:</strong> High-priority alerts for club registrations and fest passes</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SLIDE 4: 1:06 - 1:28 -->
+        <div class="slide" id="slide-3">
+          <div>
+            <span class="slide-badge" style="background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3);">
+              SCENE 4 · 1:06 - 1:28
+            </span>
+            <h2 class="slide-title">AETHER: Multilingual Voice & Action Registry</h2>
+            <p class="slide-desc">Operate the platform hands-free in English (en-IN), Telugu (te-IN), or Hindi (hi-IN) with live Speech-to-Text and SpeechSynthesis.</p>
+          </div>
+
+          <div class="slide-body">
+            <div class="mock-card" style="border-color: rgba(6, 182, 212, 0.4);">
+              <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); padding-bottom: 8px; margin-bottom: 12px;">
+                <span style="font-size: 11px; font-weight: 700; color: var(--cyan);">VOICE ACTION REGISTRY</span>
+                <span style="font-size: 10px; background: rgba(99, 102, 241, 0.2); color: #a5b4fc; padding: 2px 6px; border-radius: 4px;">16 TOOLS ALLOWLIST</span>
+              </div>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 11px;">
+                <div style="background: #020617; padding: 6px 10px; border-radius: 6px; border: 1px solid #1e293b;">
+                  <strong style="color: #fff;">NAVIGATE</strong>
+                  <div style="color: var(--text-muted); font-size: 10px;">"Open attendance"</div>
+                </div>
+                <div style="background: #020617; padding: 6px 10px; border-radius: 6px; border: 1px solid #1e293b;">
+                  <strong style="color: #fff;">READ DATA</strong>
+                  <div style="color: var(--text-muted); font-size: 10px;">"What's my next class?"</div>
+                </div>
+                <div style="background: #020617; padding: 6px 10px; border-radius: 6px; border: 1px solid #1e293b;">
+                  <strong style="color: #fff;">VOICE FORMS</strong>
+                  <div style="color: var(--text-muted); font-size: 10px;">"Raise grievance ticket"</div>
+                </div>
+                <div style="background: #020617; padding: 6px 10px; border-radius: 6px; border: 1px solid #1e293b;">
+                  <strong style="color: #fff;">LMS QUIZZES</strong>
+                  <div style="color: var(--text-muted); font-size: 10px;">"5-question quiz on DBMS"</div>
+                </div>
+              </div>
+              <div style="margin-top: 10px; font-size: 11px; color: var(--amber); background: rgba(245, 158, 11, 0.1); padding: 6px 10px; border-radius: 6px;">
+                ⚠️ <strong>2-Phase Confirmation:</strong> State-altering actions (e.g. Join Club, Cafeteria Order) require explicit confirm approval.
+              </div>
+            </div>
+
+            <div class="feature-pill-list">
+              <div class="feature-pill">
+                <span style="color: var(--cyan); font-size: 16px;">🎙️</span>
+                <div><strong>Web Speech STT:</strong> Live audio pulse, waveform visualization & push-to-talk</div>
+              </div>
+              <div class="feature-pill">
+                <span style="color: var(--indigo); font-size: 16px;">🗣️</span>
+                <div><strong>SpeechSynthesis TTS:</strong> Reads responses aloud with mute/speak controls</div>
+              </div>
+              <div class="feature-pill">
+                <span style="color: var(--emerald); font-size: 16px;">🌐</span>
+                <div><strong>3 Languages:</strong> English, Telugu (తెలుగు) & Hindi (हिंदी) matching</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SLIDE 5: 1:28 - 1:50 -->
+        <div class="slide" id="slide-4">
+          <div>
+            <span class="slide-badge" style="background: rgba(147, 51, 234, 0.15); color: #c084fc; border: 1px solid rgba(147, 51, 234, 0.3);">
+              SCENE 5 · 1:28 - 1:50
+            </span>
+            <h2 class="slide-title">Global Command Palette, Security & Privacy</h2>
+            <p class="slide-desc">Instant semantic search with Ctrl+K, prompt-injection defense, user-level allowlist gating, and privacy toggles in profile settings.</p>
+          </div>
+
+          <div class="slide-body">
+            <div class="mock-card">
+              <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); padding-bottom: 8px; margin-bottom: 12px;">
+                <span style="font-size: 11px; font-weight: 700; color: #c084fc;">COMMAND PALETTE & SECURITY</span>
+                <span style="font-size: 10px; background: rgba(147, 51, 234, 0.2); color: #d8b4fe; padding: 2px 6px; border-radius: 4px;">CTRL + K</span>
+              </div>
+              <div style="background: #020617; border-radius: 8px; padding: 10px; border: 1px solid #1e293b; margin-bottom: 10px; font-size: 11px;">
+                <div style="color: #94a3b8;">🔍 Search: <span style="color: #fff; font-weight: 700;">"hackathon"</span></div>
+                <div style="color: #34d399; margin-top: 4px;">• National Web3 Hackathon 2026 (Events)</div>
+                <div style="color: #38bdf8; margin-top: 2px;">• Hackathon Website Full-Stack Dev Gig (Campus Gigs)</div>
+              </div>
+              <div style="font-size: 11px; color: var(--text-muted);">
+                🔒 <strong>Zero Audio Persistence:</strong> Raw voice audio is processed client-side and never recorded to servers.
+              </div>
+            </div>
+
+            <div class="feature-pill-list">
+              <div class="feature-pill">
+                <span style="color: var(--rose); font-size: 16px;">🛡️</span>
+                <div><strong>Prompt Injection Shield:</strong> Adversarial instructions stripped automatically</div>
+              </div>
+              <div class="feature-pill">
+                <span style="color: var(--amber); font-size: 16px;">⚙️</span>
+                <div><strong>Profile Settings:</strong> Language switch, TTS toggle & Master AI off switch</div>
+              </div>
+              <div class="feature-pill">
+                <span style="color: var(--emerald); font-size: 16px;">📊</span>
+                <div><strong>Audit Logging:</strong> Immutable tracking in <code>AssistantAuditLog</code> DB table</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Live Subtitle & Audio Wave Bar -->
+      <div class="subtitles-banner">
+        <div class="narration-text">
+          <div class="waveform">
+            <div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+          </div>
+          <span id="captionText">Loading presentation narration...</span>
+        </div>
+        <button id="speechToggleBtn" class="btn" style="font-size: 11px; padding: 4px 10px;">
+          🔊 Speak Narration (AI Voice)
+        </button>
+      </div>
+
+      <!-- Controls & Progress Bar -->
+      <div class="controls-bar">
+        <div class="progress-track" id="progressTrack">
+          <div class="progress-fill" id="progressFill"></div>
+        </div>
+        <div class="control-buttons-row">
+          <div class="btn-group">
+            <button class="btn btn-primary" id="playBtn">▶ Play</button>
+            <button class="btn" id="prevBtn">⏮ Prev</button>
+            <button class="btn" id="nextBtn">Next ⏭</button>
+            <span class="timestamp" id="timeDisplay">0:00 / 1:50</span>
+          </div>
+          <div class="btn-group">
+            <button class="btn speed-btn" id="speedBtn">1.0x Speed</button>
+            <button class="btn" id="fsBtn">⛶ Fullscreen</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const slidesData = [
+      {
+        duration: 22,
+        caption: "Scene 1: The redesigned Login page puts authentication first above the fold, featuring quick OTP tabs and a smooth scroll link to explore the demo."
+      },
+      {
+        duration: 22,
+        caption: "Scene 2: The interactive Sandbox Demo allows visitors to test Campus AI commands with safe mock data, and offers 1-click persona logins."
+      },
+      {
+        duration: 22,
+        caption: "Scene 3: On the student dashboard, AI Insights calculates exact attendance recovery needs for subjects below the 75% mandatory threshold."
+      },
+      {
+        duration: 22,
+        caption: "Scene 4: AETHER delivers voice navigation and 16 allowlisted actions in English, Telugu, and Hindi with Web Speech STT and TTS."
+      },
+      {
+        duration: 22,
+        caption: "Scene 5: Global Command Palette (Ctrl+K) provides multi-module search with strict prompt injection protection and audit logging."
+      }
+    ];
+
+    const totalSeconds = slidesData.reduce((acc, s) => acc + s.duration, 0); // 110s = 1m50s
+    let currentSlide = 0;
+    let isPlaying = false;
+    let playbackSpeed = 1.0;
+    let elapsedSeconds = 0;
+    let timer = null;
+    let isSpeechEnabled = false;
+
+    const playBtn = document.getElementById("playBtn");
+    const prevBtn = document.getElementById("prevBtn");
+    const nextBtn = document.getElementById("nextBtn");
+    const progressFill = document.getElementById("progressFill");
+    const progressTrack = document.getElementById("progressTrack");
+    const timeDisplay = document.getElementById("timeDisplay");
+    const captionText = document.getElementById("captionText");
+    const speedBtn = document.getElementById("speedBtn");
+    const fsBtn = document.getElementById("fsBtn");
+    const speechToggleBtn = document.getElementById("speechToggleBtn");
+    const playerWindow = document.getElementById("playerWindow");
+
+    function formatTime(sec) {
+      const m = Math.floor(sec / 60);
+      const s = Math.floor(sec % 60);
+      return `${m}:${s < 10 ? '0' : ''}${s}`;
+    }
+
+    function updateSlideUI() {
+      document.querySelectorAll(".slide").forEach((s, idx) => {
+        s.classList.toggle("active", idx === currentSlide);
+      });
+      captionText.textContent = slidesData[currentSlide].caption;
+      if (isSpeechEnabled && 'speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const utter = new SpeechSynthesisUtterance(slidesData[currentSlide].caption);
+        utter.rate = playbackSpeed;
+        window.speechSynthesis.speak(utter);
+      }
+    }
+
+    function updateProgress() {
+      const pct = (elapsedSeconds / totalSeconds) * 100;
+      progressFill.style.width = pct + "%";
+      timeDisplay.textContent = `${formatTime(elapsedSeconds)} / ${formatTime(totalSeconds)}`;
+
+      // Determine active slide based on elapsed time
+      let accumulated = 0;
+      for (let i = 0; i < slidesData.length; i++) {
+        accumulated += slidesData[i].duration;
+        if (elapsedSeconds < accumulated || i === slidesData.length - 1) {
+          if (currentSlide !== i) {
+            currentSlide = i;
+            updateSlideUI();
+          }
+          break;
+        }
+      }
+    }
+
+    function tick() {
+      elapsedSeconds += 0.25 * playbackSpeed;
+      if (elapsedSeconds >= totalSeconds) {
+        elapsedSeconds = totalSeconds;
+        pause();
+      }
+      updateProgress();
+    }
+
+    function play() {
+      if (elapsedSeconds >= totalSeconds) elapsedSeconds = 0;
+      isPlaying = true;
+      playBtn.textContent = "⏸ Pause";
+      clearInterval(timer);
+      timer = setInterval(tick, 250);
+      updateSlideUI();
+    }
+
+    function pause() {
+      isPlaying = false;
+      playBtn.textContent = "▶ Play";
+      clearInterval(timer);
+      if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+    }
+
+    playBtn.addEventListener("click", () => {
+      if (isPlaying) pause();
+      else play();
+    });
+
+    prevBtn.addEventListener("click", () => {
+      let accumulated = 0;
+      for (let i = 0; i < currentSlide; i++) accumulated += slidesData[i].duration;
+      currentSlide = Math.max(0, currentSlide - 1);
+      accumulated = 0;
+      for (let i = 0; i < currentSlide; i++) accumulated += slidesData[i].duration;
+      elapsedSeconds = accumulated;
+      updateSlideUI();
+      updateProgress();
+    });
+
+    nextBtn.addEventListener("click", () => {
+      currentSlide = Math.min(slidesData.length - 1, currentSlide + 1);
+      let accumulated = 0;
+      for (let i = 0; i < currentSlide; i++) accumulated += slidesData[i].duration;
+      elapsedSeconds = accumulated;
+      updateSlideUI();
+      updateProgress();
+    });
+
+    progressTrack.addEventListener("click", (e) => {
+      const rect = progressTrack.getBoundingClientRect();
+      const clickX = e.clientX - rect.left;
+      const pct = Math.max(0, Math.min(1, clickX / rect.width));
+      elapsedSeconds = pct * totalSeconds;
+      updateProgress();
+    });
+
+    speedBtn.addEventListener("click", () => {
+      if (playbackSpeed === 1.0) playbackSpeed = 1.25;
+      else if (playbackSpeed === 1.25) playbackSpeed = 1.5;
+      else playbackSpeed = 1.0;
+      speedBtn.textContent = `${playbackSpeed}x Speed`;
+    });
+
+    speechToggleBtn.addEventListener("click", () => {
+      isSpeechEnabled = !isSpeechEnabled;
+      if (isSpeechEnabled) {
+        speechToggleBtn.textContent = "🔊 Speech ON";
+        speechToggleBtn.style.color = "#34d399";
+        updateSlideUI();
+      } else {
+        speechToggleBtn.textContent = "🔈 Speech OFF";
+        speechToggleBtn.style.color = "#94a3b8";
+        if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+      }
+    });
+
+    fsBtn.addEventListener("click", () => {
+      if (!document.fullscreenElement) {
+        playerWindow.requestFullscreen().catch(err => alert(err.message));
+      } else {
+        document.exitFullscreen();
+      }
+    });
+
+    // Initialize initial state
+    updateSlideUI();
+    updateProgress();
+  </script>
+</body>
+</html>

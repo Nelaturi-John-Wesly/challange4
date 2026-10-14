@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Sparkles } from "lucide-react";
+import { Sparkles, Video } from "lucide-react";
 import { DemoLoginButtons } from "./DemoLoginButtons";
 import { DemoAssistantPreview } from "./DemoAssistantPreview";
 import { FeatureHighlights } from "./FeatureHighlights";
@@ -26,10 +26,21 @@ export function DemoSection({
       className="w-full max-w-5xl mx-auto pt-16 pb-12 space-y-12 text-left"
     >
       {/* Section Header */}
-      <div className="text-center space-y-2 max-w-2xl mx-auto">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 text-xs font-bold uppercase tracking-wider">
-          <Sparkles className="w-3.5 h-3.5" />
-          Interactive Sandbox Preview
+      <div className="text-center space-y-3 max-w-2xl mx-auto">
+        <div className="flex items-center justify-center gap-2 flex-wrap">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 text-xs font-bold uppercase tracking-wider">
+            <Sparkles className="w-3.5 h-3.5" />
+            Interactive Sandbox Preview
+          </div>
+          <a
+            href="/demo-presentation.html"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/30 hover:border-indigo-400 text-indigo-300 hover:text-white text-xs font-bold transition-all cursor-pointer shadow-sm"
+          >
+            <Video className="w-3.5 h-3.5 text-indigo-400" />
+            <span>Launch 2-Min Video Walkthrough ▶</span>
+          </a>
         </div>
         <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
           Try the Portal Without Signing Up

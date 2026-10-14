@@ -29,6 +29,7 @@ import {
   UserPlus,
   Users,
   Sparkles,
+  Video,
 } from "lucide-react";
 import { CollegeLogo } from "@/components/shared/CollegeLogo";
 import { DemoSection } from "@/components/demo/DemoSection";
@@ -1034,14 +1035,23 @@ export default function LoginPage() {
         </div>
       </div>
 
-      {/* Scroll Hint Underneath Form */}
-      <div className="text-center pt-2 pb-6">
+      {/* Scroll Hint & Demo Video Presentation Button */}
+      <div className="text-center pt-2 pb-6 flex items-center justify-center gap-3 flex-wrap">
         <a
           href="#explore-demo"
           className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-slate-900/90 border border-cyan-500/30 hover:border-cyan-400 text-cyan-300 hover:text-white text-xs font-bold hover:scale-105 transition-all cursor-pointer shadow-xl backdrop-blur-md"
         >
           <Sparkles className="w-3.5 h-3.5 animate-pulse text-cyan-400" />
           <span>See Campus AI in action ↓</span>
+        </a>
+        <a
+          href="/demo-presentation.html"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-indigo-950/80 border border-indigo-500/40 hover:border-indigo-400 text-indigo-300 hover:text-white text-xs font-bold hover:scale-105 transition-all cursor-pointer shadow-xl backdrop-blur-md"
+        >
+          <Video className="w-3.5 h-3.5 text-indigo-400" />
+          <span>Watch 2-Min Demo Video Presentation ▶</span>
         </a>
       </div>
 
